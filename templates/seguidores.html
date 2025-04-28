@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguidores de @{{ username }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="seguidores-page">
+    <h1>Seguidores de @{{ username }}</h1>
+    <a href="{{ url_for('dashboard', username=username) }}" class="back-btn">Voltar</a>
+
+    <div class="seguidores-list">
+        {% if seguidores %}
+            <ul>
+                {% for seguidor in seguidores %}
+                    <li>
+                        @{{ seguidor.nome_usuario }}
+                        <!-- Botão para iniciar conversa -->
+                        <button class="iniciar-conversa-btn" onclick="iniciarConversa('{{ seguidor.nome_usuario }}')">
+                            Enviar Mensagem
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum seguidor encontrado.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function iniciarConversa(username) {
+            // Redireciona para a página de mensagens com o username do seguidor
+            window.location.href = `/mensagens/{{ username }}?destinatario_username=${username}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}SX69 - Página Inicial{% endblock %}
+
+{% block body_class %}index-page{% endblock %}
+
+{% block content %}
+      <!--Começo HEADER-->
+      <header class="w-full h-[100px] bg-home bg-cover bg-center flex items-center justify-between px-8 shadow-xl bg-header">
+        <!-- Sobreposição ao abrir o menu -->
+        <div id="overlay"></div>
+
+                <!-- Menu Hamburguer e Lupa de Pesquisa -->
+        <nav class="flex items-center">
+            <!-- Botão Hamburguer -->
+            <button id="hamburger" class="text-black">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <!-- Ícone da Lupa -->
+            <button id="search-toggle" class="text-black">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M15 10a5 5 0 1 0-10 0 5 5 0 0 0 10 0z"></path>
+                </svg>
+            </button>
+        </nav>
+
+        <!-- Menu de navegação para dispositivos (oculto por padrão) -->
+        <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
+            <div class="bg-black text-white p-8 space-y-4 rounded-md">
+                <a href="#home-section" class="text-white font-bold">Home</a>
+                <a href="#categories" id="categories-link" class="text-white font-bold">Categorias</a>
+                <a href="#about" id="about-link" class="text-white font-bold">Sobre</a>
+                <a href="#contact" id="contact-link" class="text-white font-bold">Contato</a>
+            </div>
+        </div>
+
+        <!-- Botão de Login/Assinatura -->
+        <div class="flex flex-col sm:flex-row sm:space-x-4 items-center space-y-2 sm:space-y-0 ml-auto">
+            <button id="subscribe-btn" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-full transition-all">
+                Assine
+            </button>
+            <div id="error-message" class="hidden"></div>
+            <span id="login-btn" class="text-gray-600 font-bold cursor-pointer fa-solid fa-user fa-2x" 
+            {% if user_initials %} style="display: none;" {% endif %}>
+            </span>
+
+            <a id="logout-btn" href="{{ url_for('logout') }}" class="text-gray-600 cursor-pointer fa-solid fa-right-from-bracket" 
+            {% if not user_initials %} style="display: none;" {% endif %}>
+            </a>
+
+        </div>
+        
+        <!-- Exibe as iniciais do usuário -->
+        <div class="flex items-center">
+            {% if user_initials %}
+                <!-- Aplica a classe para a bola com iniciais -->
+                <div class="user-initials">
+                    {{ user_initials }}
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+     <!--Fim HEADER-->
+    
+    {% if session.get('verification_pending') %}
+    <div class="test-modal">
+        <h2>Verificar E-mail</h2>
+        <form method="POST" action="{{ url_for('verify_email', email=session['user_email']) }}">
+            <p>Digite o código enviado para o e-mail: <strong>{{ session['user_email'] }}</strong></p>
+            <input type="text" name="verification_code" placeholder="Código de Verificação" required>
+            <button type="submit">Verificar</button>
+            <!-- eslint-disable-next-line -->
+            <a href="{{ url_for('close_verification') }}" class="close-link fa-solid fa-right-from-bracket"></a>
+        </form>
+    </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="flash-message {{ category }}" 
+                        style="animation: fadeout 12s forwards;">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulário de Login (oculto inicialmente) -->
+    <div id="login-form" class="hidden fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
+        <div class="container bg-white p-6 rounded-md shadow-lg relative">
+            <button id="close-login" class="fa-solid fa-right-from-bracket"></button>
+            <section class="header">
+                <h2>Entrar na sua conta</h2>
+            </section>
+            <form action="/login" method="POST" id="login-form-element" class="form">
+                <div class="form-content">
+                    <label for="login-username">Nome de usuário ou Email</label>
+                    <input type="text" id="login-username" name="login-username" placeholder="Digite seu nome de usuário ou email..." required />
+                    <a>{{ error_message }}</a> <!-- Mensagem de erro -->
+                </div>
+
+                <div class="form-content">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" name="login-password" placeholder="Digite sua senha..." required />
+                    <a>{{ error_message }}</a> <!-- Mensagem de erro -->
+                </div>
+
+                <button type="submit">Entrar</button>
+
+                <!-- Link para recuperar senha -->
+                <p><a href="javascript:void(0);" id="forgot-password-link">Esqueceu sua senha?</a></p>
+
+                <!-- Link para cadastrar-se -->
+                <p>Ainda não tem uma conta? <a href="javascript:void(0);" id="show-signup">Cadastre-se</a></p>
+            </form>
+        </div>
+    </div>
+
+        <!-- Modal de Recuperação de Senha (oculto inicialmente) -->
+    <div id="forgot-password-modal" class="hidden fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
+        <div class="container forgot-password-container bg-white p-6 rounded-md shadow-lg relative">
+            <section class="header">
+                <h2>Recuperar Senha</h2>
+            </section>
+            <form action="/forgot_password" method="POST" id="forgot-password-form">
+                <div class="form-content">
+                    <label for="recovery-email">Email</label>
+                    <input type="email" id="recovery-email" name="recovery-email" placeholder="Digite seu e-mail..." required />
+                </div>
+                <button type="submit" class="button-recuperar">Enviar Código</button>
+            </form>
+            <!-- Botão de fechar -->
+            <button id="close-forgot-password" class="fa-solid fa-right-from-bracket"></button>
+        </div>
+    </div>
+
+    <!-- Modal de Redefinição de Senha (oculto inicialmente) -->
+    <div id="reset-password-modal" class="hidden fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
+        <div class="container reset-password-container bg-white p-6 rounded-md shadow-lg relative">
+            <button id="close-reset-password" class="fa-solid fa-right-from-bracket"></button>
+            <section class="header">
+                <h2>Redefinir Senha</h2>
+            </section>
+            <form action="/reset_password/{{ email }}" method="POST" id="reset-password-form">
+                <input type="hidden" name="email" value="{{ email }}">
+                <div class="form-content">
+                    <label for="verification-code">Código de Recuperação</label>
+                    <input type="text" id="verification-code" name="verification-code" placeholder="Digite o código..." required />
+                </div>
+                <div class="form-content">
+                    <label for="new-password">Nova Senha</label>
+                    <input type="password" id="new-password" name="new-password" placeholder="Digite sua nova senha..." required />
+                </div>
+                <button type="submit" class="button-redefinir">Redefinir</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulário de Cadastro Padrão -->
+    <div id="signup-form" class="hidden fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
+        <div class="container bg-white p-6 rounded-md shadow-lg relative">
+            <button id="close-signup" class="fa-solid fa-right-from-bracket"></button>
+            <section class="header">
+                <h2>Cadastrar nova conta</h2>
+            </section>
+            <form action="/signup" method="POST" id="signup-form-element" class="form">
+                <div class="form-content">
+                    <label for="username">Nome do usuário</label>
+                    <input type="text" id="username" name="username" placeholder="Digite o nome do usuário..." required />
+                </div>
+
+                <div class="form-content">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu email..." required />
+                </div>
+
+                <div class="form-content">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha..." required />
+                </div>
+
+                <div class="form-content">
+                    <label for="password-confirmation">Confirmação de senha</label>
+                    <input type="password" id="password-confirmation" name="password-confirmation" placeholder="Digite sua senha novamente..." required />
+                </div>
+
+                <button type="submit">Cadastrar</button>
+                <div id="signup-message"></div>
+
+                <!-- Link para fazer login -->
+                <p>Já tem uma conta? <a href="javascript:void(0);" id="show-login">Entre</a></p>
+
+                <!-- Link para Criadores -->
+                <p>Deseja se cadastrar como Criador? <a href="javascript:void(0);" id="show-creator-signup">Clique aqui</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulário de Cadastro de Criadores de Conteúdo -->
+    <div id="creator-signup-form" class="hidden fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
+        <div class="container bg-white p-6 rounded-md shadow-lg relative">
+            <button id="close-creator-signup" class="fa-solid fa-right-from-bracket"></button>
+            <section class="header">
+                <h2>Cadastrar como Criador</h2>
+            </section>
+            <form action="/signup_creator" method="POST" id="signup-creator-form-element" class="form" enctype="multipart/form-data">
+                <!-- Etapa 1: Informações Básicas -->
+                <div id="step-1" class="form-step">
+                    <div class="form-content">
+                        <label for="creator-username">Nome do usuário</label>
+                        <input type="text" id="creator-username" name="username" placeholder="Digite o nome do usuário..." required />
+                    </div>
+                    <div class="form-content">
+                        <label for="creator-email">Email</label>
+                        <input type="email" id="creator-email" name="email" placeholder="Digite seu email..." required />
+                    </div>
+                    <div class="form-content">
+                        <label for="creator-password">Senha</label>
+                        <input type="password" id="creator-password" name="password" placeholder="Digite sua senha..." required />
+                    </div>
+                    <div class="form-content">
+                        <label for="creator-password-confirmation">Confirmação de senha</label>
+                        <input type="password" id="creator-password-confirmation" name="password-confirmation" placeholder="Digite sua senha novamente..." required />
+                    </div>
+    
+                    <div class="form-content">
+                        <label for="profile_picture">Foto de Perfil:</label>
+                        <input type="file" id="profile_picture" name="profile_picture" accept="image/*" required />
+                    </div>
+    
+                    <button type="button" onclick="nextStep(2)">Próximo</button>
+
+                    <!-- Link para voltar ao formulário de login no formulário de criador -->
+                <p>Já tem uma conta? <a href="javascript:void(0);" id="show-login-from-creator">Entre</a></p>
+
+                <!-- Link para voltar ao cadastro padrão no formulário de criador -->
+                <p>Deseja voltar ao cadastro padrão? <a href="javascript:void(0);" id="show-signup-from-creator">Clique aqui</a></p>
+                </div>
+    
+                <!-- Etapa 2: CPF Documentos e Fotos -->
+                <div id="step-2" class="form-step hidden">
+
+                    <div class="form-content">
+                        <label for="cover_photo">Foto de Capa:</label>
+                        <input type="file" id="cover_photo" name="cover_photo" accept="image/*" required />
+                    </div>
+                    
+                    <div class="form-content">
+                        <label for="creator-cpf">CPF:</label>
+                        <input type="text" id="creator-cpf" name="cpf" placeholder="Digite seu CPF..." required />
+                    </div>
+                    <div class="form-content">
+                        <label for="documento_rosto">Foto com Documento ao Lado do Rosto:</label>
+                        <input type="file" id="documento_rosto" name="documento_rosto" accept="image/*" required />
+                    </div>
+                    <div class="form-content">
+                        <label for="documento_frente">Documento (Frente):</label>
+                        <input type="file" id="documento_frente" name="documento_frente" accept="image/*" required />
+                    </div>
+                    <div class="form-content">
+                        <label for="documento_verso">Documento (Verso):</label>
+                        <input type="file" id="documento_verso" name="documento_verso" accept="image/*" required />
+                    </div>
+                    <button type="button" onclick="prevStep(1)">Anterior</button>
+                    <button type="button" onclick="nextStep(3)">Próximo</button>
+                    <button type="submit">Cadastrar como Criador</button>
+                </div>
+
+                <div id="step-3" class="form-step hidden">
+
+                    <div class="form-content">
+                        <input type="checkbox" id="agree_terms" name="agree_terms" required />
+                        <label for="agree_terms">
+                            Li e concordo com os <a href="#" onclick="openTermsModal()">Termos de Uso e Direitos de Imagem</a>
+                        </label>
+                    </div>                    
+
+                    <button type="button" onclick="prevStep(2)">Anterior</button>
+                    <button type="submit">Cadastrar como Criador</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Seções da página -->
+    <section id="home-section">
+        <!-- Conteúdo da seção Home -->
+    </section>
+
+    <section id="categories">
+        <!-- Conteúdo da seção Categorias -->
+    </section>
+
+    <section id="about">
+        <!-- Conteúdo da seção Sobre -->
+    </section>
+
+    <section id="contact">
+        <!-- Conteúdo da seção Contato -->
+    </section>
+
+<!-- Campo de Pesquisa -->
+ 
+<div id="search-container" class="hidden">
+    <input type="text" id="search" placeholder="Pesquisar vídeos..." />
+</div>
+
+<!-- Resultados da Pesquisa -->
+
+<section id="search-results" class="hidden">
+    <h2 class="text-lg font-bold">Resultados da Pesquisa</h2>
+    <!-- Novo container separado das categorias -->
+    <div class="search-container">
+        <button id="prev-video" class="nav-btn">&#10094;</button> <!-- Botão esquerda -->
+        
+        <div class="search-videos">
+            <!-- Vídeos inseridos aqui dinamicamente -->
+        </div>
+        
+        <button id="next-video" class="nav-btn">&#10095;</button> <!-- Botão direita -->
+    </div>
+    <div class="white-strip"></div> <!-- Tira branca -->
+</section>
+
+        <!-- Seção Sobre -->
+    <div class="about-section" id="about-section" style="display: none; padding: 50px;">
+        <button id="close-about-btn" class="fa-solid fa-right-from-bracket"></button>
+        <h2>Sobre Nós</h2>
+        <p>Nossa missão é proporcionar uma plataforma segura e de qualidade para adultos explorarem conteúdos e experiências que atendam às suas necessidades e desejos. Fundada em 2024, nossa empresa nasceu da paixão por conectar pessoas e oferecer um espaço onde possam se expressar livremente.</p>
+    </div>
+
+    <!-- Seção Contato -->
+    <div class="contact-section" id="contact-section" style="display: none; padding: 50px;">
+        <button id="close-contact-btn" class="fa-solid fa-right-from-bracket"></button>
+        <h2>Contato</h2>
+        <p>Se você tiver alguma dúvida ou sugestão, entre em contato conosco através do e-mail: sx692024@gmail.com.</p>
+    </div>
+  
+     <!-- Categorias -->
+    <div class="dropdown hidden">    
+        <div class="categories-dropdown font-bold">
+            <a href="#anal">Anal</a>
+            <a href="#boquete">Boquete</a>
+            <a href="#casal">Casal</a>
+            <a href="#novinha">Novinha</a>
+            <a href="#orgia">Orgia</a>
+            <a href="#solo">Solo</a>
+            <a href="#suruba">Suruba</a>
+            <a href="#trisal">Trisal</a>            
+        </div>
+    </div>
+
+        <!-- Começo Seção Trailer -->
+
+        <section id="trailers" class="w-full h-screen bg-black relative">
+            <div id="trailer-video" class="absolute top-0 left-0 w-full h-full">
+                {% for trailer in trailers %}
+                    <video class="video w-full h-full absolute top-0 left-0 object-cover hidden" muted 
+                        data-title="{{ trailer[2] }}" 
+                        data-description="{{ trailer[3] }}" 
+                        data-profile-picture="{% if trailer[4] and trailer[4].startswith(('http://', 'https://')) %}{{ trailer[4] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (trailer[4] if trailer[4] else 'default_profile_picture.jpg')) }}{% endif %}" 
+                        data-username="{{ trailer[5] }}"
+                        data-is-live="{{ 'true' if trailer[6] else 'false' }}"
+                        data-participantes="{{ trailer_participants.get(trailer[0], [])|join(',') }}">
+                        <source src="{% if trailer[1].startswith(('http://', 'https://')) %}{{ trailer[1] }}{% else %}{{ url_for('static', filename='uploads/trailers/' + trailer[1]) }}{% endif %}" type="video/mp4">
+                    </video>
+                {% endfor %}
+            </div>
+
+            <!-- O resto permanece -->
+            <div class="profile-badge-trailer" id="profile-badge-trailer" data-username="{{ trailers[0][5] }}">
+                <img id="trailer-profile-picture" 
+                    src="{% if trailers[0][4] and trailers[0][4].startswith(('http://', 'https://')) %}{{ trailers[0][4] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (trailers[0][4] if trailers[0][4] else 'default_profile_picture.jpg')) }}{% endif %}" 
+                    alt="Perfil do usuário" class="profile-picture"
+                    data-username="{{ trailers[0][5] }}">
+            </div>
+            <span class="live-status"></span>
+
+            <!-- Overlay de descrição e botão -->
+            <div class="absolute top-0 left-0 h-full w-full sm:w-1/2 bg-gradient-to-r from-black via-black/70 to-transparent z-30 flex flex-col justify-end p-4 sm:p-8">
+                <div class="mb-8 sm:mb-24 btn-assistir">
+                    <h1 id="trailer-title" class="text-2xl sm:text-3xl font-bold text-red-600 drop-shadow-lg mb-2">
+                        {{ trailers[0][2] if trailers else "Sem Título Disponível" }}
+                    </h1>
+                    <p id="trailer-description" class="text-base sm:text-lg font-light text-red-400 drop-shadow-lg mb-2">
+                        {{ trailers[0][3] if trailers else "Nenhuma descrição disponível no momento." }}
+                    </p>
+                    <a href="#" id="btn-assistir" class="bg-red-600 text-white font-semibold text-sm sm:text-base py-1 px-6 rounded-lg hover:bg-red-700 transition duration-300 ease-in-out">
+                        Assistir
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+
+        <!-- Fim Seção Trailer -->
+
+        <!-- Começo seção Destaque -->
+
+        <section id="destaque" class="w-full bg-black px-4 md:px-8 shadow-md mt-0 mb-0">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h1 class="text-2xl font-bold bg-white mb-2 container">Aproveite as Melhores Experiências</h1>
+                    <p class="text-white">Confira conteúdos exclusivos e assine para ter acesso ilimitado.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fim seção Destaque -->
+
+        <!-- Começo seção Carrocel -->
+
+        <section id="destaque-carrossel" class="w-full h-[500px] bg-black flex items-center py-4">
+            <div class="carousel-track">
+                <!-- Loop para Criadores -->
+                {% for creator in creators %}
+                <div class="image-container">
+                    <!-- Imagem Grande (Capa) -->
+                    <a href="{{ url_for('check_subscription', username=creator[0]) }}">
+                        <img src="{% if creator[2] and creator[2].startswith(('http://', 'https://')) %}{{ creator[2] }}{% else %}{{ url_for('static', filename='uploads/cover_photos/' + (creator[2] if creator[2] else 'default_cover_photo.jpg')) }}{% endif %}" 
+                            class="creator-image" 
+                            alt="Capa de {{ creator[0] }}">
+                    </a>
+                    
+                        <!-- Imagem Pequena (Perfil) -->
+                <div class="profile-badge-carousel" data-username="{{ creator[0] }}" data-is-live="{{ creator[3] }}">
+                    <!-- Verifica se a URL da imagem de perfil é completa ou usa fallback -->
+                    <img src="{% if creator[1] and creator[1].startswith(('http://', 'https://')) %}{{ creator[1] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (creator[1] if creator[1] else 'default_profile_picture.jpg')) }}{% endif %}" 
+                        alt="Criador: {{ creator[0] }}" class="profile-picture">
+                </div>
+
+                <span class="live-status"></span> <!-- Texto "Ao Vivo" -->
+                </div>
+                {% endfor %}
+            </div>
+        
+            <!-- Botões para Controle -->
+            <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded z-10" id="prev">&#10094;</button>
+            <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded z-10" id="next">&#10095;</button>
+        </section>
+
+        <!-- Fim seção Carrocel -->
+
+        <!-- Começo categorias -->
+      
+        <section style="margin-top: 0;">
+            {% for category, media_list in categorized_media.items() %}
+            <h2 class="category-title">{{ category | capitalize }}</h2>
+            <div id="{{ category }}" class="category-section">
+                <div class="category-container">
+                    <!-- Botão de rolagem para a esquerda -->
+                    <button class="scroll-btn left-btn">◀</button>
+        
+                    <!-- Container de vídeos/imagens -->
+                    <div class="category-videos">
+                        {% for media in media_list %}
+                        <div class="video-card">
+                            <!-- Participantes -->
+                            <div class="media-participants-container">
+                                {% if media['participantes'] and media['participantes']|length > 0 %}
+                                <div class="participants-badge" data-participants="{{ media['participantes']|join(',') }}">
+                                    <i class="fas fa-users"></i>
+                                    <span class="participants-count">{{ media['participantes']|length }}</span>
+                                    <!-- Tooltip para desktop -->
+                                    <div class="participants-tooltip">
+                                        <strong>Participantes</strong>
+                                        <ul>
+                                            {% for participante in media['participantes'] %}
+                                            <li>{{ participante }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+        
+                            <!-- Badge de perfil -->
+                            <div class="profile-badge-category" 
+                                 data-username="{{ media['nome_usuario'] }}" 
+                                 data-is-live="{{ media['is_live'] }}">
+                                <img src="{% if media['profile_picture_url'] and media['profile_picture_url'].startswith(('http://', 'https://')) %}{{ media['profile_picture_url'] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (media['profile_picture_url'] if 'profile_picture_url' in media else 'default_profile_picture.jpg')) }}{% endif %}" 
+                                     alt="Perfil do usuário" class="profile-picture">
+                            </div>
+                            <span class="live-status"></span> <!-- Fora da badge -->
+        
+                            <!-- Mídia (vídeo ou imagem) -->
+                            {% if media['type'] == 'video' %}
+                            <video class="small-video" data-media-id="{{ media['id'] }}">
+                                <source src="{% if media['filename'].startswith(('http://', 'https://')) %}{{ media['filename'] }}{% else %}{{ url_for('static', filename='uploads/media/' + media['filename']) }}{% endif %}" type="video/mp4">
+                            </video>
+                            {% elif media['type'] == 'image' %}
+                            <img src="{% if media['filename'].startswith(('http://', 'https://')) %}{{ media['filename'] }}{% else %}{{ url_for('static', filename='uploads/media/' + media['filename']) }}{% endif %}" 
+                                 alt="{{ media['title'] }}" class="small-image image-card image-categoria" data-media-id="{{ media['id'] }}">
+                            {% endif %}
+        
+                            <!-- Informações da mídia -->
+                            <div class="video-info">
+                                <h3 class="video-title">{{ media['title'] }}</h3>
+                                <p class="video-description">{{ media['description'] }}</p>
+                                <p class="video-views">Visualizações <span id="views-{{ media['id'] }}">{{ media['views'] }}</span></p>
+                            </div>
+        
+                            <!-- Botão de exclusão, visível apenas para o criador logado -->
+                            {% if session['username'] == media['nome_usuario'] %}
+                            <div class="media-actions free-media-btn">
+                                <form action="{{ url_for('delete_media', media_id=media['id']) }}" method="POST">
+                                    <button type="submit" onclick="return confirm('Tem certeza que deseja excluir esta mídia?');">Excluir</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+        
+                    <!-- Botão de rolagem para a direita -->
+                    <button class="scroll-btn right-btn">▶</button>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+      
+        <!-- Fim categorias -->
+      
+        <!-- Rodapé -->
+    <footer>
+        <p>&copy; 2024 SX69. Todos os direitos reservados. <a href="#privacy-policy" id="privacy-policy-link">Políticas e Diretrizes</a></p>
+    </footer>
+
+    <!-- Seção de Políticas e Diretrizes -->
+    <div class="policies-section" id="privacy-policy" style="display: none;">
+        <h2> Políticas e Diretrizes</h2>
+        
+        <h3> Política de Uso</h3>
+        <p>Ao utilizar nosso site, você concorda em seguir as seguintes diretrizes:</p>
+        <ul>
+            <li><strong> Conteúdo Ilegal:</strong> É estritamente proibido publicar ou compartilhar qualquer conteúdo que seja ilegal, incluindo, mas não se limitando a, conteúdo que infrinja direitos autorais, marcas registradas ou outras leis.</li>
+            <li><strong>Conteúdo Não Consensual:</strong> Não toleramos qualquer forma de conteúdo que não tenha o consentimento explícito de todas as partes envolvidas.</li>
+            <li><strong>Respeito Mútuo:</strong> Todos os usuários devem tratar uns aos outros com respeito. Qualquer forma de assédio, discriminação ou comportamento abusivo não será tolerada.</li>
+        </ul>
+
+        <h3> Diretrizes da Comunidade</h3>
+        <p>Para garantir um ambiente seguro e respeitoso, pedimos que todos os usuários sigam estas diretrizes:</p>
+        <ul>
+            <li><strong>Seja Respeitoso:</strong> Trate todos os membros da comunidade com respeito e dignidade.</li>
+            <li><strong> Compartilhe Conteúdo Apropriado:</strong> Certifique-se de que todo o conteúdo que você compartilha esteja de acordo com nossas políticas e diretrizes.</li>
+            <li><strong>Relate Comportamentos Inadequados:</strong> Se você encontrar conteúdo ou comportamento que viole nossas diretrizes, por favor, relate imediatamente à equipe de suporte.</li>
+        </ul>
+
+        <h3> Consequências</h3>
+        <p>Qualquer violação das nossas políticas e diretrizes pode resultar em ações disciplinares, incluindo a suspensão ou exclusão da conta do usuário.</p>
+
+        <p>Se você tiver alguma dúvida sobre nossas políticas, entre em contato conosco através do nosso e-mail: sx692024@gmail.com.</p>
+    </div>
+
+        <!-- Modal de Termos de Uso -->
+    <div id="terms-modal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-60 z-30">
+        <div class="bg-white p-6 rounded shadow max-w-xl w-full relative">
+            <h2 class="text-xl font-bold mb-4">Termos de Uso e Direitos de Imagem</h2>
+            <div class="overflow-y-auto max-h-80 text-sm">
+                <p>Ao se cadastrar como criador de conteúdo, você concorda em fornecer conteúdo que respeite as diretrizes da plataforma. Você autoriza a publicação de suas imagens e vídeos na plataforma, e garante que possui os direitos sobre o conteúdo enviado.</p>
+                <p>
+                    É proibido o envio de conteúdo envolvendo terceiros sem o consentimento explícito dessas pessoas. O envio de vídeos com participação de terceiros só será permitido caso todos os envolvidos também possuam conta verificada na plataforma. O descumprimento destas regras pode resultar na suspensão ou exclusão permanente da conta.
+                </p>                
+                <!-- Coloque mais termos aqui conforme sua necessidade legal -->
+            </div>
+            <button onclick="closeTermsModal()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Fechar</button>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <!-- Scripts específicos desta página -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Live - {{ profile.display_name }}{% endblock %}
+
+{% block body_class %}live-page{% endblock %}
+
+{% block body_attributes %}data-username="{{ session['username'] }}" data-is-owner="{{ 'true' if is_owner else 'false' }}" data-creator-username="{{ username }}"{% endblock %}
+
+{% block content %}
+
+<div class="live-container">
+  <h2>Live de {{ profile.display_name }}</h2>
+  <div class="video-container">
+    <video id="mainVideo" autoplay playsinline></video>
+    {% if is_owner %}
+    <div class="live-stats-container">
+      <div class="viewers-count">
+        <i class="fas fa-eye"></i>
+        <span id="viewersCount">0</span> espectadores
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="controls">
+    {% if is_owner %}
+      <button id="startLiveBtn" class="btn btn-primary">Iniciar Live</button>
+      <button id="stopLiveBtn" class="btn btn-danger" disabled>Encerrar Live</button>
+      <div id="connectionStatus" class="connection-quality quality-unknown">
+        <i class="fas fa-question-circle"></i>
+        <span>Qualidade da conexão: <strong>--</strong></span>
+    </div>
+    {% else %}
+      <button id="watchLiveBtn" class="btn btn-primary">🎥 Assistir Live</button>
+    {% endif %}
+  </div>
+  <p id="status">Status: Aguardando...</p>
+  
+  <div class="chat-container">
+    <div class="chat-messages" id="chatMessages">
+      <!-- Mensagens serão exibidas aqui -->
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Digite sua mensagem..." />
+      <button id="sendMessageBtn">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@latest/dist/livekit-client.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='js/live.js') }}"></script>
+{% endblock %}

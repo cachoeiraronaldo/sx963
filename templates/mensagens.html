@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Mensagens{% endblock %}
+{% block body_class %}mensagens-page{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('dashboard', username=username) }}" class="back-btn">Voltar</a>
+
+<div class="conversas-container">
+    <h2>Conversas</h2>
+    <ul id="lista-conversas">
+        {% for conversa in conversas %}
+            <li>
+                {{ conversa.nome_usuario }}
+                {% if conversa.nao_lidas > 0 %}
+                    <span class="badge">{{ conversa.nao_lidas }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <p id="no-conversations" class="{% if conversas|length == 0 %}visible{% else %}hidden{% endif %}">
+        Nenhuma conversa disponível.
+    </p>
+</div>
+
+<div class="mensagens-container">
+    <h2>Mensagens</h2>
+    <button id="apagar-todas-mensagens-btn" class="apagar-mesagens">Apagar mensagens</button>
+    <div id="mensagens-usuario"></div>
+    <textarea id="mensagem-texto" placeholder="Digite sua mensagem..."></textarea>
+    <button id="enviar-mensagem-btn">Enviar</button>
+</div>
+
+<div id="data"
+     data-criador-id="{{ criador_id }}"
+     data-user-id="{{ user_id }}"
+     data-destinatario-id="{{ destinatario_id }}"
+     style="display: none;">
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/mensagens.js') }}"></script>
+{% endblock %}

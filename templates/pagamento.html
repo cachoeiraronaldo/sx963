@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Pagamento{% endblock %}
+
+{% block body_class %}pagamento-page{% endblock %}
+{% block body_attributes %}id="pagamento"{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('creators_list') }}" class="back-btn">Voltar</a>
+
+<div id="card-payment" class="form-container active">
+    <h2 class="titulo-cartao">Cartão</h2>
+    <form id="form-checkout">
+
+        <input type="hidden" id="creator-username" value="{{ username }}">
+        <input type="hidden" id="tipo-pagamento" value="{{ tipo_pagamento }}">
+        <input type="hidden" id="media-id" value="{{ media_id if media_id else '' }}">
+        <input type="hidden" id="valor-pagamento" value="{{ valor }}">
+
+        <label for="form-checkout__cardholderName"></label>
+        <input type="text" id="form-checkout__cardholderName" placeholder="Nome no Cartão " required>
+        <input type="hidden" id="form-checkout__cardholderEmail">
+        <label for="form-checkout__cardNumber"></label>
+        <input type="text" id="form-checkout__cardNumber" placeholder="Número do Cartão" required>
+        <label for="form-checkout__cardExpirationDate"></label>
+        <input type="text" id="form-checkout__cardExpirationDate" placeholder="Data de Validade" required>
+        <label for="form-checkout__securityCode"></label>
+        <input type="text" id="form-checkout__securityCode" placeholder="CVV" required>
+        <select id="form-checkout__issuer" required class="hidden"></select>
+        <select id="form-checkout__installments" required class="hidden"></select>
+        <button type="submit">Pagar com Cartão</button>
+    </form>
+    <div class="error-message" id="card-error"></div>
+    <div class="success-message" id="card-success"></div>
+</div>
+
+<h2 class="titulo-pix">Pix</h2>
+<form id="form-checkout-pix">
+    <div>
+        <input type="hidden" id="pix-user-email" name="email">
+        <input type="hidden" id="pix-user-name" name="username">
+    </div>
+    <div>
+        <input type="hidden" name="transactionAmount" id="pix-transactionAmount" value="{{ valor }}">
+        <input type="hidden" name="description" id="pix-description" value="Assinatura Premium">
+        <br>
+        <button type="submit">Pagar com Pix</button>
+    </div>
+    <div id="pix-payment-result">
+        <h3>Pagamento Pendente</h3>
+        <p>Escaneie o QR Code abaixo ou utilize o código Pix para concluir o pagamento.</p>
+        <img id="pix-qr-code" src="" alt="QR Code">
+        <div>
+            <label for="pix-copy-code">Código Pix:</label>
+            <input type="text" id="pix-copy-code" readonly>
+            <button onclick="copyPixCode()">Copiar Código</button>
+        </div>
+    </div>
+</form>
+
+<div id="success-message" class="success-message hidden">✅ Pagamento aprovado! Redirecionando...</div>
+<div id="error-message" class="error-message hidden">❌ Erro ao processar pagamento.</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script src="{{ url_for('static', filename='js/pagamento.js') }}"></script>
+{% endblock %}

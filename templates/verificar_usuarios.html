@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar Usuários{% endblock %}
+
+{% block body_class %}verificar-usuarios{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Usuários Pendentes de Verificação</h1>
+</header>
+
+<main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="user-list" id="user-list-container">
+        {% for usuario in usuarios %}
+        <div class="user-card">
+            <div class="user-info">               
+                <strong>Nome de Usuário:</strong> {{ usuario[1] }}<br>
+                <strong>CPF:</strong> {{ usuario[4] if usuario[4] else 'Não informado' }}<br>
+                <strong>ID:</strong> {{ usuario[0] }}<br>         
+    
+                <!-- Faturamento do Mês Atual -->
+                <h4>Faturamento do Mês Atual</h4>
+                <strong>Assinantes:</strong> {{ usuario[8] }}<br>
+                <strong>Faturamento por Assinaturas:</strong> R$ {{ "%.2f"|format(usuario[9]) }}<br>
+                <strong>Vídeos Vendidos:</strong> {{ usuario[10] }}<br>
+                <strong>Faturamento por Vídeos:</strong> R$ {{ "%.2f"|format(usuario[11]) }}<br>
+                <strong>Faturamento Total:</strong> R$ {{ "%.2f"|format(usuario[9] + usuario[11]) }}<br>
+                <strong>Saldo Líquido (75%):</strong> R$ {{ "%.2f"|format(usuario[13]) }}<br> <!-- Saldo Líquido -->
+    
+                <!-- Histórico de Acertos -->
+                <h4>Histórico de Acertos</h4>
+                {% if usuario[12] %}
+                    {% set acerto = usuario[12][0] %}
+                    <p><strong>Mês:</strong> {{ acerto[1] }}</p>
+                    <p><strong>Faturamento do Mês:</strong> R$ {{ "%.2f"|format(acerto[2] + acerto[3]) }}</p>
+                {% else %}
+                    <p>Nenhum acerto histórico registrado.</p>
+                {% endif %}
+    
+            <div class="user-documents">
+                <strong>Documentos:</strong><br>
+                <div>
+                    {% if usuario[2] %}
+                        <a href="{{ usuario[2] }}" target="_blank">Ver Documento Frente</a>
+                    {% else %}
+                        Documento Frente não disponível
+                    {% endif %}
+                </div>
+                <div>
+                    {% if usuario[3] %}
+                        <a href="{{ usuario[3] }}" target="_blank">Ver Documento Verso</a>
+                    {% else %}
+                        Documento Verso não disponível
+                    {% endif %}
+                </div>
+                <div>
+                    {% if usuario[5] %}
+                        <a href="{{ usuario[5] }}" target="_blank">Ver Documento com Rosto</a>
+                    {% else %}
+                        Documento com Rosto não disponível
+                    {% endif %}
+                </div>
+            </div>
+    
+            <div class="actions">
+                <button 
+                    class="btn btn-success btn-aprovar-criador" 
+                    data-user-id="{{ usuario[0] }}">
+                    Liberar
+                </button>
+            
+                <button 
+                    class="btn btn-danger btn-excluir-criador" 
+                    data-user-id="{{ usuario[0] }}"
+                    onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
+                    Excluir
+                </button>
+            </div>
+          </div>  
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="video-list">
+        <h2>Mídias Pendentes</h2>
+        {% for usuario_id, videos in videos %}
+        <div class="user-header">
+            <h3 class="user-id">
+                Nome: 
+                {% for usuario in usuarios %}
+                    {% if usuario[0] == usuario_id %}
+                        {{ usuario[1] }}
+                    {% endif %}
+                {% endfor %}
+                - ID: {{ usuario_id }}
+            </h3>
+        </div>
+        <div id="media-container-{{ usuario_id }}" class="media-container">
+            {% for video in videos %}
+            <div class="video-card1">
+                <strong>ID da Mídia:</strong> {{ video[0] }}<br>
+                <strong>Nome do Arquivo:</strong> {{ video[1].split('/')[-1] }}<br>
+    
+                <!-- Exibe a categoria da mídia -->
+                <strong>Categoria:</strong>
+                {% if video[4] == 'trailer' %}
+                    Trailer
+                {% elif video[4] == 'perfil' %}
+                    Perfil
+                {% else %}
+                    {{ video[4] }}
+                {% endif %}
+                <br>
+    
+                <!-- Exibe a descrição da mídia -->
+                <strong>Descrição:</strong> {{ video[5] }}<br>
+
+                {% if video[6] and video[6]|length > 0 %}
+                    <strong>Participantes:</strong>
+                    <div class="pessoas-midia-container">
+                        {% for pessoa in video[6] %}
+                            <span class="pessoa-midia-tag" title="{{ pessoa }}">{{ pessoa }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Verificar o tipo de mídia -->
+                {% if video[2] == 'image' %}
+                    <!-- Exibe imagem -->
+                    <img src="{{ video[1] }}" alt="Imagem" width="320" height="240">
+                {% elif video[2] == 'video' and video[4] == 'trailer' %}
+                    <!-- Exibe vídeo da categoria 'trailer' -->
+                    <video width="320" height="240" controls>
+                        <source src="{{ video[1] }}" type="video/mp4">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                {% elif video[2] == 'video' %}
+                    <!-- Exibe vídeo de outras categorias -->
+                    <video width="320" height="240" controls>
+                        <source src="{{ video[1] }}" type="video/mp4">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                {% endif %}
+    
+                <!-- Exibir status da mídia -->
+                <span class="badge 
+                    {% if video[3] == 'pendente' %}badge-warning
+                    {% elif video[3] == 'bloqueado' %}badge-danger
+                    {% elif video[3] == 'disponivel' %}badge-success
+                    {% elif video[3] == 'excluido' %}badge-excluido
+                    {% else %}badge-secondary{% endif %}">
+                    {{ video[3] }}
+                </span>       
+                <!-- Mensagem associada à mídia -->
+                {% if video[3] in ['pendente', 'bloqueado'] %}
+                <div class="media-message">
+                    {{ video[6] if video[6] else "Sem mensagem associada." }}
+                </div>
+                {% endif %}       
+                <!-- Ações para administração -->
+                <div class="actions">
+                    <button class="btn btn-success btn-approve" data-id="{{ video[0] }}">Aprovar</button>
+                    <button class="btn btn-warning btn-block" data-id="{{ video[0] }}">
+                        {% if video[3] == 'bloqueado' %}Desbloquear{% else %}Bloquear{% endif %}
+                    </button>
+                    <button class="btn btn-danger btn-delete" data-id="{{ video[0] }}">
+                        Excluir
+                    </button>
+                </div>                
+            </div>
+            {% endfor %}
+        </div>
+
+        {% endfor %}
+    </div>        
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='js/verificar_usuario.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ creator.display_name }} - Criador{% endblock %}
+{% block body_class %}creator-details-page{% endblock %}
+{% block body_attributes %}data-username="{{ creator.username }}"{% endblock %}
+
+{% block content %}
+<!-- 🔙 Botão de Voltar -->
+<a href="#" class="back-btn" onclick="handleBackButton()">Voltar</a>
+
+<div class="creator-page">
+    <!-- Cabeçalho com foto de perfil e informações básicas -->
+    <header class="creator-header">
+        <div class="creator-profile">
+            <!-- Verifica se a URL da imagem de perfil é completa ou usa fallback -->
+            <img src="{% if creator.profile_picture and creator.profile_picture.startswith(('http://', 'https://')) %}{{ creator.profile_picture }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + creator.profile_picture) }}{% endif %}"
+                 alt="Foto de perfil" class="profile-picture">
+            <div class="creator-info">
+                <h1 class="display-name">@{{ creator.display_name }}</h1>
+                <p class="description">{{ creator.description }}</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Exibir total de curtidas e seguidores lado a lado -->
+    <div class="likes-followers-container">
+        <div class="likes-info">
+            <div class="highlight">
+                <div class="icon-text">
+                    <i class="fas fa-heart"></i>
+                    <span id="total-likes">{{ total_likes }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="followers-info">
+            <div class="highlight">
+                <div class="icon-text">
+                    <i class="fas fa-users"></i>
+                    <span id="total-followers">{{ total_followers }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de detalhes -->
+    <section class="creator-details">
+        <!-- Total de mídias disponíveis -->
+        <div class="media-count">
+            <div class="highlight">
+                <div class="icon-text">
+                    <i class="fas fa-photo-video"></i>
+                    <span>Mídias disponíveis {{ creator.total_midia }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Valor da assinatura -->
+        <div class="subscription-info">
+            <div class="highlight">
+                <div class="icon-text">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Assinatura R$ {{ "%.2f"|format(creator.valor_assinatura) }}</span>
+                </div>
+            </div>
+
+            {% if creator.is_logged_in %}
+                {% if not creator.has_active_subscription %}
+                    <a href="/subscribe/{{ creator.username }}" class="subscribe-btn">Assinar</a>
+                {% else %}
+                    <p class="already-subscribed">Você já é assinante deste Perfil.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Mídias do criador -->
+    <section class="creator-media">
+        <div class="media-grid">
+            {% for media in creator.media %}
+            <div class="media-item">
+                {% if media.type == 'image' %}
+                <!-- Imagem -->
+                <img src="{% if media.filename.startswith(('http://', 'https://')) %}{{ media.filename }}{% else %}{{ url_for('static', filename='uploads/media/' + media.filename) }}{% endif %}" 
+                     alt="{{ media.title }}" class="media-preview">
+                {% elif media.type == 'video' %}
+                <!-- Vídeo -->
+                <video controls class="media-preview">
+                    <source src="{% if media.filename.startswith(('http://', 'https://')) %}{{ media.filename }}{% else %}{{ url_for('static', filename='uploads/media/' + media.filename) }}{% endif %}" type="video/mp4">
+                    Seu navegador não suporta vídeos.
+                </video>
+                {% endif %}
+                <div class="media-info">
+                    <h3>{{ media.title }}</h3>
+                    <p>{{ media.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/creator_details.js') }}"></script>
+{% endblock %}

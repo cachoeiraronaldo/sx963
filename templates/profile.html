@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Perfil{% endblock %}
+
+{% block body_class %}edit-profile-page{% endblock %}
+{% block body_attributes %}id="edit-profile"{% endblock %}
+
+{% block content %}
+<!-- Botão de Dashboard -->
+<a href="{{ url_for('dashboard', username=session['username']) }}" class="dashboard-btn">Profile</a>
+
+<!-- Botão de Voltar para o Index -->
+<a href="{{ url_for('index') }}" class="back-btn">Voltar</a>
+
+<!-- Formulário para atualizar o valor da assinatura -->
+<form action="/update_subscription_price" method="POST" class="form-container" style="margin-top: 70px;">
+    <div class="form-group">
+        <label for="valor_assinatura">Valor da Assinatura (R$)</label>
+        <input type="number" id="valor_assinatura" name="valor_assinatura" step="0.01" min="19.90" value="{{ user_info[6] }}" required>
+    </div>
+    <button type="submit">Atualizar Valor</button>
+</form>
+
+<div class="-info" style="text-align: center;">
+    <h3 class="highlight-title-border">Assinaturas</h3>
+    <p>Número de Assinantes {{ subscription_count }}</p>
+    <p>Faturamento por Assinaturas R$ {{ total_revenue }}</p>
+</div>
+
+<div class="video-sales-info" style="text-align: center;">
+    <h3 class="highlight-title-border">Vendas de Vídeos</h3>
+    <p>Número de Vídeos Vendidos {{ videos_vendidos }}</p>
+    <p>Faturamento por Vídeos R$ {{ total_video_revenue }}</p>
+</div>
+
+<div class="acerto-info" style="text-align: center; margin-top: 20px;">
+    <h3 class="highlight-title-border">Faturamento do Mês Atual</h3>
+    <p><strong>Total de Assinaturas</strong> R$ {{ total_revenue }}</p>
+    <p><strong>Total de Vídeos Vendidos</strong> R$ {{ total_video_revenue }}</p>
+    <p><strong>Faturamento Total</strong> R$ {{ total_revenue + total_video_revenue }}</p>
+</div>
+
+<div class="acerto-info" style="text-align: center; margin-top: 20px;">
+    <h3 class="highlight-title-border">Histórico de Acertos</h3>
+    {% if acerto_mes_anterior %}
+        <p><strong>Mês:</strong> {{ acerto_mes_anterior[1] }}</p>
+        <p><strong>Faturamento do Mês:</strong> R$ {{ "%.2f"|format(acerto_mes_anterior[2] + acerto_mes_anterior[3]) }}</p>
+    {% else %}
+        <p>Nenhum acerto histórico registrado.</p>
+    {% endif %}
+</div>
+
+<!-- Seção de Saque -->
+<form action="{{ url_for('solicitar_saque') }}" method="POST" class="form-container" style="margin-top: 20px;">
+    <div class="form-group">
+        <label for="saldo_disponivel">Saldo Disponível (R$)</label>
+        <input type="text" id="saldo_disponivel" name="saldo_disponivel" value="{{ saldo_liquido }}" readonly>
+    </div>
+    <button type="submit" class="btn btn-primary">Solicitar Saque via Pix</button>
+</form>
+
+<main>
+    <h1 class="highlight-title-gradient">Editar Perfil</h1>
+    <h3 style="text-align: center;">Aqui serão aprovados qualquer estilo de vídeos e fotos.</h3>
+    <form action="/update-profile" method="POST" enctype="multipart/form-data" class="form-container">
+        <label for="display_name">Nome de exibição</label>
+        <input type="text" id="display_name" name="display_name" value="{{ user_info[1] }}">
+
+        <div class="form-group">
+            <label for="description">Descrição</label>
+            <textarea id="description" name="description">{{ user_info[2] }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="theme_color">Cor do tema</label>
+            <input type="color" id="theme_color" name="theme_color" value="{{ user_info[3] }}">
+        </div>
+
+        <div class="form-group">
+            <label for="profile_picture">Foto de perfil</label>
+            <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="cover_photo">Foto de capa</label>
+            <input type="file" id="cover_photo" name="cover_photo" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="media_photos">Fotos</label>
+            <input type="file" id="media_photos" name="media_photos" accept="image/*" multiple>
+        </div>
+
+        <div class="form-group">
+            <label for="participantes_fotos">Participantes em Fotos (separados por vírgula)</label>
+            <textarea id="participantes_fotos" name="participantes_fotos[]" placeholder="Ex: nome1, nome2, nome3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="media_videos">Vídeos</label>
+            <input type="file" id="media_videos" name="media_videos" accept="video/*" multiple>
+            <label for="video_value">Valor do Vídeo (opcional)</label>
+            <input type="number" id="video_value" name="video_value" step="0.01" min="0" placeholder="Valor em R$">
+        </div>
+
+        <div class="form-group">
+            <label for="participantes_videos">Participantes em Vídeos (separados por vírgula)</label>
+            <textarea id="participantes_videos" name="participantes_videos[]" placeholder="Ex: nome1, nome2, nome3"></textarea>
+        </div>
+
+        <button type="submit">Salvar</button>
+    </form>
+</main>
+
+<h2 class="highlight-title-gradient">Enviar Mídia Grátis</h2>
+<h3 style="text-align: center;">Nesta parte só serão aprovados vídeos 9:16 ou seja estilo reels.</h3>
+<h3 style="text-align: center;">Fotos qualquer estilo.</h3>
+<form action="/upload_free_media" method="POST" enctype="multipart/form-data" class="form-container">
+    <div class="form-group">
+        <label for="categoria">Categoria</label>
+        <select name="categoria" id="categoria" required>
+            <option value="anal">ANAL</option>
+            <option value="boquete">BOQUETE</option>
+            <option value="casal">CASAL</option>
+            <option value="novinha">NOVINHA</option>
+            <option value="orgia">ORGIA</option>
+            <option value="solo">SOLO</option>
+            <option value="suruba">SURUBA</option>
+            <option value="trisal">TRISAL</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="media">Arquivo de Mídia</label>
+        <input type="file" name="media" id="media" accept="video/*,image/*" required>
+    </div>
+    <div class="form-group">
+        <label for="media_title">Título</label>
+        <input type="text" id="media_title" name="media_title" placeholder="Digite o título" required>
+    </div>
+    <div class="form-group">
+        <label for="media_description">Descrição</label>
+        <textarea id="media_description" name="media_description" placeholder="Digite a descrição" required></textarea>
+    </div>
+
+    <!-- Novo campo para participantes -->
+    <div class="form-group">
+        <label for="participantes">Participantes (separados por vírgula)</label>
+        <textarea id="participantes" name="participantes" placeholder="Ex: nome1, nome2, nome3"></textarea>
+    </div>
+
+    <button type="submit">Enviar Mídia Grátis</button>
+</form>
+
+<h2 class="highlight-title-gradient">Enviar Mídia Trailer</h2>
+<h3 style="text-align: center;">Nesta parte só serão aprovados vídeos 16:9 ou na horizontal.</h3>
+<form action="/upload_trailer" method="POST" enctype="multipart/form-data" class="form-container" style="margin-bottom: 20px;">
+    <div class="form-group">
+        <label for="video_title">Título do Vídeo</label>
+        <input type="text" id="video_title" name="video_title" required>
+    </div>
+    <div class="form-group">
+        <label for="video_description">Descrição</label>
+        <textarea id="video_description" name="video_description" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="video_file">Arquivo de Vídeo</label>
+        <input type="file" id="video_file" name="video_file" accept="video/*" required>
+    </div>
+
+    <!-- Novo campo para participantes -->
+    <div class="form-group">
+        <label for="participantes">Participantes (separados por vírgula)</label>
+        <textarea id="participantes" name="participantes" placeholder="Ex: nome1, nome2, nome3"></textarea>
+    </div>
+
+    <button type="submit">Enviar Vídeo</button>
+</form>
+{% endblock %}

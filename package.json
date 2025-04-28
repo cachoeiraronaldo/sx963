@@ -1,0 +1,21 @@
+{
+  "name": "cardapio",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx tailwindcss -i ./static/css/style.css -o ./static/css/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^3.4.14"
+  },
+  "dependencies": {
+    "@mercadopago/sdk-js": "^0.0.3",
+    "express": "^4.21.2",
+    "livekit-client": "^2.9.9",
+    "mercadopago": "^2.3.0"
+  }
+}

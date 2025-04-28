@@ -1,0 +1,3511 @@
+/* Importando Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* html, body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Remove qualquer scroll horizontal */
+    height: 100%; /* Garante que o corpo da página ocupe toda a altura da tela */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Overlay Global*/
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 999; /* Garante que fique acima de outros elementos */
+    display: none; /* Inicialmente oculto */
+}
+
+.overlay.active {
+    display: block; /* Mostra o overlay quando ativo */
+}
+
+/* Estilo para o Cabeçalho Fixo */
+.bg-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Garante que o cabeçalho fique acima dos outros elementos */
+    background-color: rgba(255, 255, 255, 0.3); /* Fundo branco com leve transparência */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    padding: 10px 20px;
+    margin-bottom: 0; /* Remove margem inferior */
+}
+
+/* Header */
+.navbar {
+    background-color: #000;
+}
+
+/* Descontar rolagem Home e Categorias para não ficarem debaixo do Cabeçalho*/
+section {
+    scroll-margin-top: 100px;
+}
+
+/* Seção do trailer */
+
+#trailers {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 0;
+    height: 90vh;
+}
+
+#trailer-video .video {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    position: absolute;
+}
+
+/* Gradiente e conteúdo */
+.bg-gradient-to-r {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(to right, black, rgba(0, 0, 0, 0.7), transparent);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+}
+
+#trailer-title {
+    font-size: 2rem;
+    color: #e11d48;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+    margin-bottom: 10px;
+}
+
+#trailer-description {
+    font-size: 1rem;
+    color: #fca5a5;
+    margin-bottom: 20px;
+}
+
+/* Botão de assistir */
+a.bg-red-600 {
+    display: inline-block;
+    background-color: #e11d48;
+    color: white;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+a.bg-red-600:hover {
+    background-color: #c81e43;
+}
+
+.profile-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #fff;
+    z-index: 10;
+}
+
+.profile-badge-trailer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #fff;
+    z-index: 10;
+}
+
+.profile-badge-trailer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a imagem preencher a bolinha sem distorcer */
+}
+
+.profile-badge-trailer.live {
+    border: 2px solid red;
+    animation: pulse 1.5s infinite;
+}
+
+.profile-badge-category {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #fff;
+    z-index: 10;
+}
+
+.profile-badge-category img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a imagem preencher a bolinha sem distorcer */
+}
+
+
+/* Estilo para indicar que o criador está ao vivo */
+.profile-badge-category.live {
+    border: 2px solid red; /* Borda vermelha */
+    animation: pulse 1.5s infinite; /* Efeito de pulsação */
+}
+
+/* Animação de pulsação */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
+
+/* Status "Ao Vivo" no carrossel */
+.image-container .live-status {
+    position: absolute;
+    top: 55px; /* logo abaixo da bolinha (40px de altura + 10px top + margem extra) */
+    right: 10px;
+    font-size: 12px;
+    color: red;
+    font-weight: bold;
+    display: none;
+    z-index: 20;
+}
+
+/* Status "Ao Vivo" nas categorias */
+.video-card .live-status {
+    position: absolute;
+    top: 55px;
+    right: 10px;
+    font-size: 12px;
+    color: red;
+    font-weight: bold;
+    display: none;
+    z-index: 20;
+}
+
+#trailers .live-status {
+    position: absolute;
+    top: 55px;
+    right: 10px;
+    font-size: 12px;
+    color: red;
+    font-weight: bold;
+    display: none;
+    z-index: 20;
+}
+
+/* Media Queries */
+@media (width <= 1023px) {
+    #trailers {
+        height: 60vh;
+    }
+}
+
+/* Fim seção trailer */
+
+/* Começo função Corrosel */
+
+#destaque {
+    margin-bottom: 0; /* Tente um valor pequeno para ver se faz diferença */
+    padding: 20px;
+    justify-items: center;
+}
+
+#destaque p {
+    margin-bottom: -30px;
+}
+
+#destaque-carrossel {
+    margin-top: 0; /* Tente um valor maior para ver se o carrossel sobe */
+}
+
+/* Configuração geral para a seção destaque */
+#destaque-carrossel {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: black;
+    padding: 1rem 0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: auto; /* Defina uma altura fixa para o carrossel */
+    overflow: visible; /* Garante que os cards não sejam cortados */
+
+}
+
+/* Faixa que desliza as imagens */
+#destaque-carrossel .carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out; /* Suaviza o movimento do carrossel */
+    will-change: transform; /* Otimiza o desempenho do deslocamento */
+    width: max-content; /* Garante que o conteúdo ocupe apenas o necessário */
+}
+
+/* Cada contêiner de imagem */
+.image-container {
+    width: 300px;
+    height: 500px;
+    position: relative;
+    margin: 0 1px; /* Espaço entre os containers */
+}
+
+/* Estilo da imagem */
+.creator-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* ou contain, depende do que você preferir */
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.profile-badge-carousel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #fff;
+    z-index: 10;
+}
+
+.profile-badge-carousel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a imagem preencher a bolinha sem distorcer */
+}
+
+/* Estilo para indicar que o criador está ao vivo */
+.profile-badge-carousel.live {
+    border: 2px solid red; /* Borda vermelha */
+    animation: pulse 1.5s infinite; /* Efeito de pulsação */
+}
+
+/* Botões para controle */
+#destaque-carrossel button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Corrigido: removido espaço extra */
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+#destaque-carrossel #prev {
+    left: 10px; /* Botão à esquerda */
+}
+
+#destaque-carrossel #next {
+    right: 10px; /* Botão à direita */
+}
+
+
+/* Fim função Corrosel */
+
+/* Começo estilos para a página de perfil do usuário */
+
+
+/* Estilos para participantes */
+.media-participants-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 9;
+}
+
+.participants-badge {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.participants-badge:hover {
+    background-color: rgba(106, 17, 203, 0.9); /* Cor roxa do tema */
+    transform: scale(1.1);
+}
+
+.participants-badge i {
+    font-size: 14px;
+}
+
+.participants-count {
+    position: absolute;
+    font-size: 10px;
+    font-weight: bold;
+    bottom: -5px;
+    right: -5px;
+    background-color: #6a11cb;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* estilo global, pra todas as páginas */
+.participants-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0; /* ou right, dependendo do layout */
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    width: 150px;
+    font-size: 12px;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.participants-tooltip ul {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+}
+
+.participants-tooltip li {
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root {
+    --theme-color: #ffffff; /* Cor padrão */
+    --cover-photo: url('default_cover_photo.jpg'); /* Imagem padrão */
+}
+
+#user-profile {
+    color: #ffffff;
+    background-color: var(--theme-color); /* Usando variável CSS */
+}
+
+#user-profile-header {
+    position: relative;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-image: var(--cover-photo);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    overflow: hidden;
+    margin: 0 10px; /* Adiciona 20px de margem nas laterais */
+    width: calc(100% - 20px); /* Compensa as margens para manter a largura total */
+}
+
+#user-profile-header .header-overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    color: white;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+#user-profile .username {
+    font-size: 2em; /* Aumenta o tamanho do texto do nome de usuário */
+    font-weight: bold; /* Deixa o texto em negrito, se desejado */
+    margin-left: 10px; /* Espaço entre a imagem e o nome de usuário */
+    position: relative; /* Permite o uso de top */
+    top: -5px; /* Ajusta a posição vertical para cima */
+}
+
+#user-profile .profile-picture {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    border: 5px solid white;
+}
+
+#user-profile .gallery {
+    padding: 20px;
+    margin-top: 5px;
+    
+}
+
+/* Grid Container */
+#user-profile .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    justify-items: center;
+}
+
+/* Grid Item */
+#user-profile .grid-item {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a1a1a, #333333); /* Gradiente padrão */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    z-index: 2;
+}
+
+/* Ajustes Gerais de Mídia */
+#user-profile .grid-item img,
+#user-profile .grid-item video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    z-index: 1; /* Certifica-se de que a mídia fique acima do fundo */
+}
+
+/* Mensagem na parte inferior */
+#user-profile .media-message {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7); /* Fundo semitransparente */
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    z-index: 2; /* Certifica-se de que a mensagem fique visível acima da mídia */
+}
+
+#user-profile .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    position: relative; /* Adicione esta linha */
+    z-index: 1; /* Adicione esta linha */
+}
+
+#user-profile .grid-item img,
+#user-profile .grid-item video {
+    width: 100%;
+    height: 200px; /* Defina uma altura fixa para as mídias */
+    object-fit: fill; /* Isso garante que a imagem ou vídeo preencha o contêiner */
+    border-radius: 5px;
+}
+
+/* 🔥 Quando o vídeo é expandido, mantém a proporção */
+#user-profile .grid-item video:fullscreen {
+    object-fit: contain; /* 🔹 Mantém a proporção sem cortes quando expandido */
+}
+
+/* Adicionando Sombra Colorida */
+#user-profile .grid-item img,
+#user-profile .grid-item video {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Ajuste Específico para Vídeos Verticais */
+#user-profile .grid-item.vertical {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Gradiente quente para vídeos verticais */
+}
+
+/* Ajuste Específico para Vídeos Horizontais */
+#user-profile .grid-item.horizontal {
+    background: linear-gradient(135deg, #43cea2, #185a9d); /* Gradiente frio para vídeos horizontais */
+}
+
+/* Botão de exclusão fora do container */
+#user-profile .media-actions {
+    margin-top: 280px;
+    text-align: center;
+}
+
+#user-profile .media-actions button {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    z-index: 3; /* Garante que o botão esteja sempre acima */
+    position: relative; /* Evita sobreposição ao container */
+    display: block; /* Garante que o botão esteja abaixo do grid-item */
+}
+
+#user-profile .media-actions button:hover {
+    background-color: #c9302c;
+}
+
+#user-profile .video-blocked {
+    position: relative;
+}
+
+/* Estilo para o ícone do cadeado */
+#user-profile .locked-icon i {
+    font-size: 20px; /* Mesmo tamanho do ícone do coração */
+    color: #6a11cb; /* Mesma cor roxa */
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+/* Estilo para a imagem expandida */
+#user-profile .expanded-image {
+    display: none; /* Inicialmente escondido */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Para ficar acima de outros elementos */
+}
+
+#user-profile .expanded-image img {
+    max-width: 90%;
+    max-height: 90%;
+}
+
+/* Container para os botões */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Espaçamento entre os botões */
+    margin-top: 20px;
+}
+
+/* Estilo base para os botões de ação */
+.action-button {
+    background-color: #e3f2fd; /* Fundo azul claro */
+    padding: 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Efeito hover para os botões */
+.action-button:hover {
+    background-color: #bbdefb; /* Tom mais escuro ao passar o mouse */
+}
+
+/* Estilo para os ícones dentro dos botões */
+.action-button i {
+    font-size: 20px;
+    color: #6a11cb; /* Cor roxa para os ícones */
+}
+
+/* Estilo para os números (curtidas, seguidores, mensagens) */
+.action-button span {
+    font-size: 16px;
+    color: #6a11cb; /* Cor roxa para os números */
+    font-weight: bold;
+}
+
+/* Estilo específico para o botão de mensagens não lidas */
+#unread-messages {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+/* Media Queries para Responsividade */
+@media (width <= 1024px) {
+    #user-profile-header {
+        height: 200px; /* Altura reduzida do cabeçalho em telas menores */
+    }
+
+    #user-profile .profile-picture {
+        width: 100px; /* Largura reduzida da bolinha do perfil */
+        height: 100px; /* Altura reduzida da bolinha do perfil */
+    }
+
+    #user-profile-header .header-overlay {
+        left: 10px; /* Ajuste a posição do texto */
+        bottom: 15px; /* Ajuste a posição do texto */
+    }
+
+        #user-profile .username {
+            font-size: 1.7em; /* Aumenta o tamanho do texto do nome de usuário */
+            font-weight: bold; /* Deixa o texto em negrito, se desejado */
+            margin-left: 10px; /* Espaço entre a imagem e o nome de usuário */
+            position: relative; /* Permite o uso de top */
+            top: -5px; /* Ajusta a posição vertical para cima */
+        }
+}
+
+/* Media Queries para Responsividade */
+@media (width <= 480px) {
+    #user-profile-header {
+        height: 150px; /* Altura ainda mais reduzida do cabeçalho em telas muito pequenas */
+        padding: 10px; /* Reduz o preenchimento */
+    }
+
+    #user-profile .profile-picture {
+        width: 70px; /* Largura ainda mais reduzida da bolinha do perfil */
+        height: 70px; /* Altura ainda mais reduzida da bolinha do perfil */
+        margin-bottom: 1px; /* Distância entre a bolinha e o texto */
+    }
+
+    #user-profile-header .header-overlay {
+        left: 10px; /* Ajuste a posição do texto */
+        bottom: -10px; /* Ajuste a posição do texto para que fique dentro do cabeçalho */
+    }
+
+    #user-profile .username {
+        font-size: 1.5em; /* Aumenta o tamanho do texto do nome de usuário */
+        font-weight: bold; /* Deixa o texto em negrito, se desejado */
+        margin-left: 10px; /* Espaço entre a imagem e o nome de usuário */
+        position: relative; /* Permite o uso de top */
+        top: -5px; /* Ajusta a posição vertical para cima */
+    }
+}
+
+.btn-pay {
+    background-color: #e3f2fd;
+    color: #6a11cb;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.btn-pay:hover {
+    background-color: #d1e5f8;
+}
+
+/* Fim Dashboard */
+
+/* Começo estilos para a página de edição do perfil */
+
+#edit-profile {
+    color: #333; /* Cor do texto mais suave */
+    background: linear-gradient(to right, #6a11cb, #2575fc); /* Gradiente roxo/azul */
+}
+
+#edit-profile .form-container {
+    max-width: 40%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9); /* Fundo branco com leve transparência */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidade */
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+@media (width <= 728px) {
+    #edit-profile .form-container{
+        max-width: 90%;
+    }
+}
+
+#edit-profile label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #6a11cb; /* Roxo para os labels */
+}
+
+#edit-profile input,
+#edit-profile textarea {
+    width: 100%;
+    padding: 10px;
+    padding-left: 10px; /* Espaço à esquerda */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Garante que o padding seja incluído na largura */
+    background-color: #f9f9f9; /* Fundo claro para os inputs */
+    color: #333; /* Cor do texto */
+}
+
+#edit-profile input:focus,
+#edit-profile textarea:focus {
+    border-color: #6a11cb; /* Cor da borda quando em foco (roxo) */
+    outline: none; /* Remove o contorno padrão do navegador */
+    box-shadow: 0 0 5px rgba(106, 17, 203, 0.5); /* Sombra suave ao redor do campo */
+}
+
+#edit-profile button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #6a11cb; /* Roxo */
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+}
+
+#edit-profile button:hover {
+    background-color: #2575fc; /* Azul no hover */
+}
+
+#edit-profile .highlight-title-gradient {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente roxo/azul */
+    color: white; /* Texto branco */
+    padding: 8px 12px; /* Espaçamento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    display: inline-block; /* Ajusta o fundo ao tamanho do texto */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra leve */
+    display: block; /* Transforma em bloco para permitir margin auto */
+    width: fit-content; /* Mantém o tamanho ajustado ao texto */
+    margin: 0 auto; /* Centraliza horizontalmente */ 
+    margin-top: 25px;  
+}
+
+#edit-profile .highlight-title-border {
+    border: 2px solid #6a11cb; /* Borda roxa */
+    color: #ffffff; /* Texto roxo */
+    padding: 8px 12px; /* Espaçamento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    display: inline-block; /* Ajusta o fundo ao tamanho do texto */
+    background-color: transparent; /* Fundo transparente */
+}
+
+#edit-profile h3 {
+    margin-top: 10px;
+}
+
+/* Fim Profile */
+
+/* 🔙 Botão de Voltar */
+.back-btn {
+    position: fixed;
+    top: 15px;
+    right: 20px; /* Mantém no canto superior direito */
+    text-decoration: none;
+    background: #3498db; /* Azul */
+    color: white; /* Texto branco */
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+    z-index: 1000;
+}
+
+.back-btn:hover {
+    background: #2980b9; /* Azul mais escuro no hover */
+}
+
+@media (width >= 728px) {
+    .back-btn {
+        right: 35px; /* Mantém no canto superior direito */
+    }
+}
+
+/* 🏠 Botão de Dashboard */
+.dashboard-btn {
+    position: fixed;
+    top: 15px;
+    left: 20px; /* Posiciona no canto superior esquerdo */
+    text-decoration: none;
+    background: #3498db; /* Azul */
+    color: white; /* Texto branco */
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+    z-index: 1000;
+}
+
+.dashboard-btn:hover {
+    background: #2980b9; /* Azul mais escuro no hover */
+}
+
+/* Começo container de vídeos gratis */
+
+/* 🔥 Estilos gerais para o container de vídeos e imagens */
+.category-section {
+    padding: 10px;
+    background-color: #000;
+    scroll-margin-top: 165px; /* Altura do cabeçalho */
+}
+
+/* 🔥 Título da categoria */
+.category-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0 1px 10px;
+    color: #FF0000;
+    background-color: #000;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* 🔥 Container de vídeos e imagens */
+.category-videos {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    scroll-behavior: smooth;
+    padding: 10px 0;
+}
+
+/* 🔥 Estilo base para cartões de vídeo e imagem */
+.video-card, .image-card {
+    flex: 0 0 auto;
+    width: 20vw; /* Responsivo com relação à largura da tela */
+    max-width: 400px; /* Largura máxima para telas grandes */
+    aspect-ratio: 2 / 3; /* Mantém proporção automática 2:3 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+    padding: 0 0;
+}
+
+/* 🔥 Ajuste para vídeos e imagens dentro das categorias */
+.category-videos .small-video, 
+.category-videos .small-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    object-fit: cover; /* 🔹 Preenche completamente o card sem distorcer */
+    border-radius: 8px;
+    min-height: 300px;
+    transition: all 0.3s ease-in-out; /* 🔹 Suaviza a transição quando expande */
+}
+
+/* 🔥 Quando o vídeo é expandido, mantém a proporção */
+.category-videos .small-video:fullscreen {
+    object-fit: contain; /* 🔹 Mantém a proporção sem cortes quando expandido */
+}
+
+/* 🔥 Ajuste para desktops grandes (1024px+) */
+@media (min-width: 1024px) { 
+    .category-videos .small-video {
+        object-fit: cover; /* 🔹 Garante que o vídeo ocupe todo o espaço */
+    }
+}
+
+/* 🔥 Informações sobre o vídeo/imagem */
+.video-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    color: #fff;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 8px;
+}
+
+/* 🔥 Botões de rolagem */
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.scroll-btn.left-btn {
+    left: 10px;
+}
+
+.scroll-btn.right-btn {
+    right: 10px;
+}
+
+/* 🔥 Estilo para botão de exclusão */
+.media-actions.free-media-btn {
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.media-actions.free-media-btn button {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.media-actions.free-media-btn button:hover {
+    background-color: #c9302c;
+}
+
+/* Fim container de vídeos gratis */
+
+/* Rodapé */
+footer {
+    background-color: #000000;
+    color: #FFF;
+    text-align: center;
+    padding: 5px 0;
+    height: 40px; /* Define uma altura fixa */
+    position: relative;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    margin-top: 10px;
+}
+
+footer a {
+    color: #FF0000;
+    text-decoration: none;
+}
+
+/* Efeito de Hover */
+footer a:hover {
+    color: #FFC107; /* Cor amarela quando o mouse passar sobre o link */
+}
+
+/* Adicionando Responsividade para telas menores que 480px */
+@media (width <= 480px) {
+    footer {
+        padding: 10px 10px; /* Ajusta o padding para telas pequenas */
+        height: 50px; /* Ajusta a altura para telas menores */
+    }
+    
+    footer p {
+        font-size: 14px; /* Diminui o tamanho da fonte do parágrafo */
+        line-height: 1.4; /* Ajusta o espaçamento entre as linhas */
+        word-wrap: break-word; /* Permite que o texto quebre de linha se necessário */
+    }
+
+    footer a {
+        font-size: 12px; /* Ajusta o tamanho do link */
+    }
+
+    footer {
+        white-space: nowrap; /* Impede quebra de linha, mantendo o texto na mesma linha */
+    }
+}
+
+.left-btn {
+    left: 10px;
+}
+
+.right-btn {
+    right: 10px;
+}
+
+.scroll-btn {
+    position: absolute;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    font-size: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Menu deslizante */
+#mobile-menu {
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+    width: 50%; /* Mantendo 50% da largura */
+    max-width: 300px; /* Limite de largura */
+    background-color: #000; /* Fundo preto */
+    height: 100%; /* Altura total */
+    position: fixed;
+    top: 0; /* Alinhado ao topo */
+    left: 0; /* Alinhado à esquerda */
+    z-index: 20;
+    display: flex;
+    flex-direction: column; /* Itens alinhados verticalmente */
+    padding: 1rem;
+    gap: 1rem; /* Espaçamento entre os links */
+    justify-content: flex-start; /* Começa no topo */
+    align-items: flex-start; /* Alinhado à esquerda */
+    box-sizing: border-box; /* Garantindo que padding não altere dimensões */
+}
+
+/* Quando o menu está aberto */
+#mobile-menu.open {
+    transform: translateX(0);
+}
+
+/* Links do menu */
+#mobile-menu a {
+    text-align: left; /* Alinhar o texto à esquerda */
+    width: 100%; /* Ocupa toda a largura do menu */
+    display: block; /* Garante que cada link ocupa uma linha */
+    padding: 0.5rem 0; /* Espaçamento interno para facilitar o toque */
+    box-sizing: border-box; /* Padding não interfere na largura */
+    text-decoration: none; /* Remove o sublinhado */
+}
+
+/* Estilo para o menu de categorias (visível em telas grandes) */
+#categories-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%; /* Faz o menu aparecer abaixo do item "Home" */
+    background-color: #000;
+    color: white;
+    padding: 10px 0;
+    margin-top: 5px;
+    width: 200px; /* Ajuste a largura conforme necessário */
+    z-index: 100; /* Para garantir que o menu fique acima de outros elementos */
+}
+
+#categories-menu a {
+    display: block; /* Faz com que os links ocupem a largura total */
+    padding: 10px;
+    font-weight: bold;
+}
+
+/* Tornar o menu de categorias visível */
+#categories-menu.show {
+    display: block;
+}
+
+/* Aumente a especificidade dos seletores */
+div.dropdown {
+    margin-left: 20px; /* Espaçamento à esquerda */
+    margin-right: 20px; /* Espaçamento à direita */
+    margin-top: 20px; /* Espaçamento no topo */
+    margin-bottom: 25px; /* Espaçamento na base */
+    background-color: rgb(255, 255, 255); /* Cor de fundo do menu */ 
+}
+
+div.dropdown div.categories-dropdown a {
+    color: rgb(0, 0, 0); /* Cor do texto */
+    padding: 5px; /* Espaçamento interno */
+    text-decoration: none; /* Remove o sublinhado */
+}
+
+div.dropdown div.categories-dropdown a:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Efeito hover */
+}
+
+/* Estilos básicos para a seção */
+.policies-section {
+    padding: 20px;
+    margin: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+/* Estilo para o botão "Fechar" da seção Sobre */
+#close-about-btn {
+    background-color: rgb(255, 255, 255); /* Cor de fundo vermelha */
+    color: rgb(160, 0, 0);           /* Cor do texto branco */
+    border: none;           /* Remove borda */
+    padding: 4px 8px;       /* Adiciona espaçamento interno */
+    font-size: 16px;        /* Define o tamanho da fonte */
+    cursor: pointer;       /* Aponta o cursor como mãozinha */
+    border-radius: 5px;     /* Arredonda os cantos */
+    position: absolute;     /* Faz o botão se posicionar de maneira absoluta em relação à seção */
+    top: 10px;              /* Distância do topo da seção */
+    right: 20px;            /* Distância da direita da seção */
+}
+
+/* Estilo para a seção Sobre */
+#about-section {
+    padding: 50px;
+    position: relative; /* Faz a seção ser o contêiner de posicionamento do botão */
+    display: block;     /* Certifique-se de que a seção seja exibida corretamente */
+}
+
+/* Estilo para o botão "Fechar" da seção Contato */
+#close-contact-btn {
+    background-color: rgb(255, 255, 255); /* Cor de fundo vermelha */
+    color: rgb(160, 0, 0);           /* Cor do texto branco */
+    border: none;           /* Remove borda */
+    padding: 4px 8px;       /* Adiciona espaçamento interno */
+    font-size: 16px;        /* Define o tamanho da fonte */
+    cursor: pointer;       /* Aponta o cursor como mãozinha */
+    border-radius: 5px;     /* Arredonda os cantos */
+    position: absolute;     /* Faz o botão se posicionar de maneira absoluta em relação à seção */
+    top: 10px;              /* Distância do topo da seção */
+    right: 20px;            /* Distância da direita da seção */
+}
+
+/* Estilo para a seção Contato */
+#contact-section {
+    padding: 50px;
+    position: relative; /* Faz a seção ser o contêiner de posicionamento do botão */
+    display: block;     /* Certifique-se de que a seção seja exibida corretamente */
+}
+
+#close-about-btn:hover {
+    color: rgba(255, 255, 255, 0.7); /* Muda a cor ao passar o mouse */
+}
+
+#close-contact-btn:hover {
+    color: rgba(255, 255, 255, 0.7); /* Muda a cor ao passar o mouse */
+}
+
+/* Começo pesquisas */
+
+#forgot-password-modal.hidden,
+#reset-password-modal.hidden, 
+#login-form.hidden, 
+#signup-form.hidden, 
+#creator-signup-form.hidden,
+#search-results.hidden,
+#search-container.hidden {
+    display: none;
+}
+
+/* Começo pesquisas */
+
+#forgot-password-modal.hidden,
+#reset-password-modal.hidden, 
+#login-form.hidden, 
+#signup-form.hidden, 
+#creator-signup-form.hidden,
+#search-results.hidden,
+#search-container.hidden {
+    display: none;
+}
+
+/* ===== ESTILO DO CONTAINER DE PESQUISA ALINHADO À ESQUERDA ===== */
+#search-container {
+    top: 90px; /* Ajuste conforme a altura da sua navbar */
+    left: 20px; /* Distância da borda esquerda */
+    right: auto; /* Remove o alinhamento à direita */
+    padding: 10px 0; /* Ajuste o padding vertical */
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-start; /* Alinha os itens à esquerda */
+    width: auto; /* Largura automática conforme conteúdo */
+    background-color: transparent; /* Fundo transparente */
+}
+
+#search {
+    width: 400px; /* Aumenta a largura padrão */
+    max-width: 100%; /* Garante que não ultrapasse o tamanho disponível */
+    padding: 12px 20px; /* Espaçamento interno maior */
+    border: none;
+    border-radius: 30px; /* Borda arredondada */
+    font-size: 16px; /* Tamanho da fonte */
+    background-color: #000; /* Fundo branco */
+    color: #ffffff; /* Cor do texto (preto) */
+    outline: none; /* Remove o contorno ao focar */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    transition: all 0.3s ease; /* Transição suave */
+    margin-left: 10px; /* Adiciona margem à esquerda */
+}
+
+/* Estilo do placeholder (texto de dica) */
+#search::placeholder {
+    color: #999; /* Cor do placeholder (cinza claro) */
+}
+
+/* Altera a borda quando o campo está em foco */
+#search:focus {
+    border: 2px solid #dc0303; /* Borda branca */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Sombra branca sutil */
+    background-color: #000; /* Mantém o fundo preto */
+}
+
+/* Responsividade: Abaixo de 1024px, mantém uma largura fixa ou mínima */
+@media (max-width: 1024px) {
+    #search {
+        width: 100%; /* Ocupa toda a largura disponível */
+        min-width: 150px; /* Define uma largura mínima para evitar reduções excessivas */
+        padding: 7px 10px;
+    }
+}
+
+/* ===== BOTÃO DA LUPA (SEARCH-TOGGLE) ===== */
+#search-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: -10px;
+    transition: transform 0.2s ease;
+}
+
+#search-toggle:hover {
+    transform: scale(1.1);
+}
+
+#search-toggle svg {
+    width: 40px;
+    height: 40px;
+}
+
+#hamburger  {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: -15px;
+    transition: transform 0.2s ease;
+}
+
+#hamburger :hover {
+    transform: scale(1.1);
+}
+
+#hamburger svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* 🔹 Estiliza o container da pesquisa */
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100vw;
+    background-color: #000;
+    padding: 10px;
+    position: relative; /* Garante que os botões fiquem dentro da área */
+}
+
+/* 🔹 Container que segura os vídeos */
+.search-videos {
+    display: flex;
+    overflow: hidden; /* Remove a barra de rolagem */
+    scroll-behavior: smooth;
+    width: 100%;
+    justify-content: flex-start; /* Alinha os vídeos à esquerda */
+    padding: 10px 0; /* Espaçamento para evitar corte */
+}
+
+/* 🔹 Ajuste do card de vídeo */
+.search-video-card {
+    flex: 0 0 auto; /* Impede que o card de vídeo encolha */
+    margin-right: 10px; /* Espaçamento entre os vídeos */
+    background-color: #000;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out;
+    position: relative;
+}
+
+/* Estilo da foto do perfil */
+.search-video-card .profile-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2; /* Garante que a foto fique acima do vídeo */
+}
+
+.search-video-card .video-title {
+    font-size: 16px;
+    margin: 0;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.search-video-card .video-description {
+    font-size: 14px;
+    margin: 0;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.search-video-card .video-views {
+    font-size: 12px;
+    margin: 0;
+    color: #ccc;
+    margin-bottom: 50px;
+}
+
+/* 🔹 Garante que os vídeos mantenham a proporção correta */
+.search-video-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Mantém a proporção sem cortes */
+    border-radius: 8px;
+    background-color: black; /* Fundo preto para vídeos 9:16 */
+}
+
+/* 🔹 Ajuste das larguras dos vídeos */
+@media (min-width: 1025px) {
+    .search-video-card {
+        width: calc((100% / 5) - 10px); /* Para desktop: 5 vídeos */
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .search-video-card {
+        width: calc((100% / 4) - 10px); /* Para tablets: 4 vídeos */
+    }
+}
+
+@media (max-width: 767px) {
+    .search-video-card {
+        width: calc((100% / 1) - 10px); /* Para celulares: 1 
+        vídeo */
+        
+    }
+}
+
+/* 🔹 Ajustando os botões de navegação */
+.navigation-buttons {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    pointer-events: none; /* Evita que interfiram nos vídeos */
+}
+
+#prev-video, #next-video {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background-color 0.3s ease;
+}
+
+#prev-video { left: 10px; }
+#next-video { right: 10px; }
+
+#prev-video:hover, #next-video:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.white-strip {
+    display: none; /* Esconde a tira por padrão */
+    width: 100%; /* 100% da largura */
+    height: 5px; /* Altura de 5px */
+    background-color: white; /* Cor branca */
+}
+
+@media (width <= 729px) {
+    .white-strip {
+        display: block; /* Exibe a tira quando a largura é 730px ou menor */
+    }
+}
+
+/* Fim pesquisas */
+
+.about-section,
+.contactn-sectio {
+    margin-top: 20px; /* Ajuste o valor conforme necessário */
+}
+
+/* Começo Formulário de Login */
+
+#login-form .container {
+    position: fixed; /* Fixa na tela */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza perfeitamente */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    background: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+    z-index: 1000; /* Garante que fique acima dos outros elementos */
+}
+
+#login-form .header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */ 
+}
+
+#signup-form .header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */ 
+}
+
+#creator-signup-form .header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */ 
+}
+
+/* Ajustes para telas com altura menor que 700px */
+@media (height <= 700px) {
+    #signup-form {
+        align-items: flex-start; /* Alinha o formulário no topo */
+        padding-top: 20px; /* Adiciona um espaçamento no topo */
+    }
+
+    #signup-form .container {
+        max-width: 90%; /* Aumenta a largura máxima para melhor aproveitamento do espaço */
+        margin-top: 80px; /* Adiciona margem no topo */
+    }
+}
+
+/* Formulário de Login - Modal Centralizado */
+#creator-signup-form {
+    position: fixed; /* Fixa na tela */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza perfeitamente */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    background: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+    z-index: 1000; /* Garante que fique acima dos outros elementos */
+}
+
+/* Estilos do container do formulário */
+#creator-signup-form .container {
+    background-color: #fafafa;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
+    max-width: 300px; /* Largura máxima */
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* Organização vertical */
+}
+
+/* Ajustes para telas com altura menor que 700px */
+@media (height <= 700px) {
+    #creator-signup-form {
+        align-items: flex-start; /* Alinha o formulário no topo */
+        padding-top: 20px; /* Adiciona um espaçamento no topo */
+    }
+
+    #creator-signup-form .container {
+        max-width: 90%; /* Aumenta a largura máxima para melhor aproveitamento do espaço */
+        margin-top: 80px; /* Adiciona margem no topo */
+    }
+}
+
+/* Estilo da caixinha e texto de termos */
+#step-3 .form-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+#step-3 input[type="checkbox"] {
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
+    accent-color: #2575fc;
+    cursor: pointer;
+}
+
+#step-3 label {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+}
+
+#step-3 label a {
+    color: #2575fc;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#step-3 label a:hover {
+    color: #1a5bbf;
+}
+
+/* Modal de Termos - Tela toda escurecida */
+#terms-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+}
+
+/* Quando ativo via JS */
+#terms-modal.flex {
+    display: flex;
+}
+
+/* Conteúdo do Modal */
+#terms-modal .bg-white {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Título */
+#terms-modal h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #111;
+}
+
+/* Texto dos termos */
+#terms-modal .text-sm {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.6;
+    padding-right: 4px;
+}
+
+/* Botão de fechar */
+#terms-modal button {
+    margin-top: 20px;
+    background-color: #2575fc;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    font-weight: bold;
+}
+
+#terms-modal button:hover {
+    background-color: #1a5bbf;
+}
+
+#close-login {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#close-login:hover {
+    color: #f1d3d3; /* Vermelho ao passar o mouse */
+}
+
+#close-signup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#close-signup:hover {
+    color: #f1d3d3; /* Vermelho ao passar o mouse */
+}
+
+#close-creator-signup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#close-creator-signup:hover {
+    color: #f1d3d3; /* Vermelho ao passar o mouse */
+}
+
+#close-forgot-password {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#close-forgot-password:hover {
+    color: #f1d3d3; /* Vermelho ao passar o mouse */
+}
+
+#close-reset-password {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    color: white;
+    font-size: 1.4em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+#close-reset-password:hover {
+    color: #f1d3d3; /* Vermelho ao passar o mouse */
+}
+
+#forgot-password-modal {
+    position: fixed; /* Fixa na tela */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza perfeitamente */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    background: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+    z-index: 1000; /* Garante que fique acima dos outros elementos */
+}
+
+#forgot-password-modal .container {
+    width: 100%; /* Largura máxima do container */
+    max-width: 400px; /* Largura máxima */
+    margin: 0; /* Centraliza horizontalmente */
+    padding: 0; /* Remove qualquer padding adicional */
+    background-color: #fafafa;
+    border-radius: 14px; /* Bordas arredondadas */
+    overflow: hidden; /* Garante que nada escape do container */
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5); /* Sombra elegante */
+    box-sizing: border-box; /* Inclui bordas e padding no cálculo */
+
+}
+
+#forgot-password-modal .header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */ 
+
+}
+
+#forgot-password-modal .button-recuperar {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 20px;
+    width: 95%;
+}
+
+#forgot-password-modal .button-recuperar:hover {
+    background: linear-gradient(135deg, #440388, #1a5bbf); /* Gradiente mais escuro ao passar o mouse */
+}
+
+/* Ajustes para telas com altura menor que 700px */
+@media (width <= 478px) {
+    #forgot-password-modal .container {
+        width: 90%;
+    }
+}
+
+#reset-password-modal {
+    position: fixed; /* Fixa na tela */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza perfeitamente */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    background: rgba(0, 0, 0, 0.5); /* Fundo escuro semi-transparente */
+    z-index: 1000; /* Garante que fique acima dos outros elementos */
+}
+
+#reset-password-modal .container {
+    width: 100%; /* Largura máxima do container */
+    max-width: 300px; /* Largura máxima */
+    margin: 0; /* Centraliza horizontalmente */
+    padding: 0; /* Remove qualquer padding adicional */
+    background-color: #fafafa;
+    border-radius: 14px; /* Bordas arredondadas */
+    overflow: hidden; /* Garante que nada escape do container */
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5); /* Sombra elegante */
+    box-sizing: border-box; /* Inclui bordas e padding no cálculo */
+}
+
+#reset-password-modal .header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */ 
+
+}
+
+#reset-password-modal .button-redefinir {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 20px;
+    width: 95%;
+}
+
+#reset-password-modal .button-redefinir:hover {
+    background: linear-gradient(135deg, #440388, #1a5bbf); /* Gradiente mais escuro ao passar o mouse */
+}
+
+/* Ajustes para telas com altura menor que 700px */
+@media (width <= 478px) {
+    #reset-password-modal .container {
+        width: 90%;
+    }
+}
+
+/* Ajustes específicos para as inputs dentro dos modais de Redefinir Senha e Recuperar Senha */
+#reset-password-modal .form-content input,
+#forgot-password-modal .form-content input {
+    width: calc(100% - 20px); /* Ajusta a largura para considerar o padding */
+    padding: 10px; /* Adiciona padding interno */
+    margin: 0 10px 15px 10px; /* Adiciona margem nas laterais */
+    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+}
+
+.form-content input {
+    width: 100%;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.form-content input:focus {
+    border-color: #6a11cb; /* Roxo ao focar */
+    outline: none;
+    box-shadow: 0 0 5px rgba(106, 17, 203, 0.5);
+}
+
+.form button {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradiente azul e roxo */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+.form button:hover {
+    background: linear-gradient(135deg, #440388, #1a5bbf); /* Gradiente mais escuro ao passar o mouse */
+}
+
+/* verificação do email */
+
+/* Modal principal */
+.test-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+/* Estilização dos elementos internos */
+.test-modal h2 {
+    color: #6a11cb; /* Roxo principal */
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.test-modal p {
+    text-align: center; /* Centraliza o texto horizontalmente */
+    color: #555;
+    margin-bottom: 20px; /* Espaçamento abaixo do parágrafo */
+    line-height: 1.4;
+    font-size: 1rem; /* Define um tamanho de fonte adequado */
+}
+
+.test-modal p strong {
+    color: #2575fc; /* Azul do gradiente */
+    word-break: break-all; /* Quebra palavras longas */
+    display: block; /* Coloca o e-mail em uma nova linha */
+    margin-top: 5px; /* Espaçamento entre o texto e o e-mail */
+}
+
+.test-modal input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.test-modal input:focus {
+    border-color: #6a11cb;
+    outline: none;
+}
+
+.test-modal button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.test-modal button:hover {
+    background: linear-gradient(135deg, #5a0db3, #1a65e0);
+    transform: translateY(-2px);
+}
+
+.close-link {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #6a11cb;
+    font-size: 1.2rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.close-link:hover {
+    color: #ff4757;
+}
+
+/* Fim Formulários*/
+
+/* Mensagem do Flash*/
+.flash-message {
+    position: fixed;
+    top: 80px;
+    right: 5px;
+    z-index: 9999;
+    padding: 5px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: fadeout 12s forwards;
+}
+
+.success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Definindo a animação fadeout */
+@keyframes fadeout {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Classe para a bola com iniciais - Tela grande */
+.user-initials {
+    width: 24px;          /* Tamanho da bola */
+    height: 24px;         /* Tamanho da bola */
+    border-radius: 50%;   /* Faz a bola ser redonda */
+    background-color: #0c0302;  /* Cor de fundo */
+    color: white;         /* Cor das letras */
+    display: flex;        /* Usando flexbox para centralizar o conteúdo */
+    align-items: center;  /* Alinha as iniciais verticalmente */
+    justify-content: center; /* Alinha as iniciais horizontalmente */
+    font-weight: bold;    /* Deixa as iniciais em negrito */
+    font-size: 15px;      /* Tamanho da fonte das iniciais */
+    margin-left: 10px;    /* Espaçamento à esquerda */
+    border: 2px solid #db0b0b; /* Borda fina e branca em volta da bola */
+    box-shadow: 0 0 0 2px white, 0 0 0 3px #db0b0b; /* Borda branca e vermelha (com distância) */
+}
+
+/* Classe para a bola com iniciais - Tela pequena (até 640px) */
+@media (max-width: 640px) {
+    .user-initials {
+        width: 24px;          /* Tamanho da bola */
+        height: 24px;         /* Tamanho da bola */
+        border-radius: 50%;   /* Faz a bola ser redonda */
+        background-color: #0c0302;  /* Cor de fundo */
+        color: white;         /* Cor das letras */
+        display: flex;        /* Usando flexbox para centralizar o conteúdo */
+        align-items: center;  /* Alinha as iniciais verticalmente */
+        justify-content: center; /* Alinha as iniciais horizontalmente */
+        font-weight: bold;    /* Deixa as iniciais em negrito */
+        font-size: 15px;      /* Tamanho da fonte das iniciais */
+        margin-left: 10px;    /* Espaçamento à esquerda */
+        border: 2px solid #db0b0b; /* Borda fina e branca em volta da bola */
+        box-shadow: 0 0 0 2px white, 0 0 0 3px #db0b0b; /* Borda branca e vermelha (com distância) */
+    }
+}
+
+/* Estilo para o botão "Assine" */
+#subscribe-btn {
+    position: relative;
+    z-index: 10; /* Garante que o botão esteja acima */
+}
+
+/* Estilo para o ícone de logout */
+.fa-right-from-bracket {
+    background-color: transparent;
+    display: inline-block;
+    position: relative;
+    z-index: 1; /* Garante que o ícone fique abaixo */
+    font-size: 24px; /* Aumenta o tamanho do ícone (ajuste conforme necessário) */
+    text-decoration: none; /* Remove o sublinhado */
+}
+
+/* Remove o fundo laranja ao passar o mouse */
+.fa-right-from-bracket:hover {
+    background-color: transparent;
+    color: #db0b0b;
+}
+
+.fa-user:hover {
+    background-color: transparent;
+    color: #db0b0b;
+}
+
+/* Começo creartor_list */
+
+.creators-list-page {
+    background: linear-gradient(to right, #141e30, #243b55); /* Azul escuro moderno */
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+/* ✅ Container principal */
+.creators-list-page .container {
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+}
+
+/* 🎨 Títulos */
+.creators-list-page h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.creator-list, .subscription-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* 🔹 Cartões de criadores e assinaturas */
+.creator-item, .subscription-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    padding: 12px 10px;
+    border-radius: 12px;
+    transition: transform 0.3s ease, background 0.3s ease;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 🖱️ Efeito Hover */
+.creator-item:hover, .subscription-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* 🖼️ Avatares */
+.creator-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #ffffff; /* Vermelho vibrante */
+    object-fit: cover;
+}
+
+ /* Fim creartor_list */
+
+/* Começo estilos específicos para a página de pagamento */
+
+#pagamento {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradiente aplicado ao fundo */
+    margin: 0;
+    padding: 20px;
+    height: 100%; /* Garante que o gradiente ocupe toda a altura da tela */
+}
+
+/* Estilo para os títulos */
+#pagamento .titulo-cartao, #pagamento .titulo-pix {
+    background-color: #6a11cb; /* Cor de fundo para "Cartão" */
+    color: #fff; /* Cor da letra (branco) */
+    padding: 10px; /* Espaçamento interno */
+    border-radius: 8px; /* Bordas arredondadas */
+    margin-bottom: 20px; /* Espaçamento inferior */
+    text-align: center; /* Centraliza o texto */
+    max-width: 600px; /* Mesma largura máxima do container */
+    width: 80%; /* Ocupa 100% da largura disponível até o máximo */
+    margin-left: auto; /* Centraliza horizontalmente */
+    margin-right: auto; /* Centraliza horizontalmente */
+    margin-top: 50px;
+}
+
+#pagamento .titulo-pix {
+    background-color: #3498db; /* Cor de fundo para "Pix" */
+}
+
+/* Container dos formulários */
+#pagamento #form-checkout, #pagamento #form-checkout-pix {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#pagamento .container {
+    height: 18px;
+    display: inline-block;
+    border: 1px solid rgb(118, 118, 118);
+    border-radius: 2px;
+    padding: 1px 2px;
+    margin-bottom: 10px;
+}
+
+#pagamento input, #pagamento select {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Estilo para os campos de entrada quando estão em foco */
+#pagamento input:focus, #pagamento select:focus {
+    border-color: #6a11cb; /* Cor da borda quando em foco (roxo) */
+    outline: none; /* Remove o contorno padrão do navegador */
+    box-shadow: 0 0 5px rgba(106, 17, 203, 0.5); /* Sombra suave ao redor do campo */
+}
+
+#pagamento button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    width: 100%; /* Faz o botão ocupar 100% da largura do container */
+    max-width: 200px; /* Define uma largura máxima para o botão */
+    margin: 0 auto; /* Centraliza o botão horizontalmente */
+    display: block; /* Garante que o botão ocupe a largura total */
+}
+
+#pagamento button:hover {
+    background-color: #0056b3;
+}
+
+#pagamento .progress-bar {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#pagamento #pix-payment-result {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#pagamento #pix-qr-code {
+    width: 200px;
+    height: 200px;
+    margin-bottom: 20px;
+}
+
+#pagamento #pix-copy-code {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#pagamento .hidden {
+    display: none;
+}
+
+#pagamento .success-message {
+    color: green;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#pagamento .error-message {
+    color: red;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Fim estilos específicos para a página de pagamento */
+
+/* Começo estilos específicos para a página creator_details.html */
+
+.creator-details-page {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.creator-details-page .creator-page {
+    max-width: 600px;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.creator-details-page .creator-header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.creator-details-page .creator-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.creator-details-page .profile-picture {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+}
+
+.creator-details-page .display-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.creator-details-page .description {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.creator-details-page .creator-details {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.creator-details-page .subscription-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.creator-details-page .subscription-price {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.creator-details-page .subscribe-btn {
+    display: inline-block;
+    background: #6a11cb;
+    color: #fff;
+    font-size: 16px;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    margin-top: 0;
+}
+
+.creator-details-page .subscribe-btn:hover {
+    background: #440388;
+}
+
+.creator-details-page .already-subscribed {
+    font-size: 16px;
+    color: #2ecc71;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 0;
+}
+
+.creator-details-page .media-count {
+    text-align: center;
+    font-size: 16px;
+    color: #555;
+}
+
+.creator-details-page .highlight {
+    background-color: #e3f2fd;
+    padding: 12px;
+    border-radius: 8px;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90%;
+    margin: 0 auto; /* Centraliza o bloco */
+}
+
+.creator-details-page section {
+    margin-top: 5px;
+}
+
+/* Estilo para o contêiner principal */
+.likes-followers-container {
+    display: flex;
+    justify-content: center; /* Centraliza os itens horizontalmente */
+    gap: 20px; /* Espaçamento entre curtidas e seguidores */
+    margin-bottom: -15px; /* Espaçamento abaixo do bloco */
+}
+
+/* Estilo para os blocos individuais (curtidas e seguidores) */
+.likes-info,
+.followers-info {
+    text-align: center;
+}
+
+/* Estilo para o destaque (highlight) */
+.likes-info .highlight,
+.followers-info .highlight {
+    background-color: transparent; /* Remove o fundo */
+    padding: 0; /* Remove o padding */
+    box-shadow: none; /* Remove a sombra */
+    width: auto; /* Largura automática */
+}
+
+/* Estilo para o ícone e texto */
+.likes-info .icon-text,
+.followers-info .icon-text {
+    background-color: #e3f2fd; /* Fundo azul claro */
+    padding: 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para o ícone */
+.likes-info .icon-text i,
+.followers-info .icon-text i {
+    font-size: 20px;
+    color: #6a11cb; /* Cor roxa para os ícones */
+}
+
+/* Estilo para o número */
+.likes-info .icon-text span,
+.followers-info .icon-text span {
+    font-size: 16px;
+    color: #2575fc; /* Cor azul para os números */
+    font-weight: bold;
+}
+
+.creator-details-page .icon-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.creator-details-page .icon-text i {
+    font-size: 20px;
+    color: #6a11cb; /* Cor roxa para os ícones de mídia e assinatura */
+}
+
+.creator-details-page .icon-text span {
+    font-size: 16px;
+    color: #2575fc; /* Cor roxa para os textos de mídia e assinatura */
+    font-weight: bold;
+}
+
+/* Fim estilos específicos para a página creator_details.html */
+
+/* Começo Subscribe*/
+
+.subscribe-body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    padding: 20px;
+}
+
+/* Estilos específicos para a página de assinatura */
+.subscribe-page {
+    max-width: 400px;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0;
+    text-align: center;
+}
+
+.subscribe-header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: -100px;
+}
+
+.subscribe-header h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.subscribe-header p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.subscribe-details {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.subscribe-price {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.subscribe-btn {
+    display: inline-block;
+    background: #6a11cb;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    margin-top: 15px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.subscribe-btn:hover {
+    background: #440388;
+}
+
+.back-link {
+    display: inline-block;
+    background: #3498db;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.back-link:hover {
+    background: #2980b9;
+}
+
+.highlight {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 8px;
+    display: inline-block;
+    box-shadow: none;
+}
+
+/* Fim Subscribe*/
+
+/* Começo mensagens.html*/
+
+/* Estilos gerais para a página de mensagens */
+.mensagens-page {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza os containers horizontalmente */
+}
+
+.mensagens-page .conversas-container, 
+.mensagens-page .mensagens-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-top: 50px;
+    width: 100%; /* Ocupa 100% da largura disponível */
+    max-width: 600px; /* Largura máxima de 300px */
+}
+
+.mensagens-page .conversas-container h2, 
+.mensagens-page .mensagens-container h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #6a11cb;
+}
+
+.mensagens-page #lista-conversas {
+    list-style: none;
+    padding: 0;
+    max-height: 250px; /* Altura fixa para a lista de conversas */
+    overflow-y: auto; /* Habilita a rolagem vertical */
+}
+
+.mensagens-page #lista-conversas li {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.mensagens-page #lista-conversas li:hover {
+    background-color: #c3cfe2;
+}
+
+.mensagens-page #mensagens-usuario {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.mensagens-page .mensagem-enviada, 
+.mensagens-page .mensagem-recebida {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.mensagens-page .mensagem-enviada {
+    background-color: #6a11cb;
+    color: #fff;
+    align-self: flex-end;
+}
+
+.mensagens-page .mensagem-recebida {
+    background-color: #e3f2fd;
+    color: #333;
+    align-self: flex-start;
+}
+
+.mensagens-page #mensagem-texto {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+/* Estilo para o textarea quando em foco */
+.mensagens-page #mensagem-texto:focus {
+    border-color: #6a11cb; /* Cor da borda quando em foco (roxo) */
+    outline: none; /* Remove o contorno padrão do navegador */
+    box-shadow: 0 0 5px rgba(106, 17, 203, 0.5); /* Sombra suave ao redor do campo */
+}
+
+.mensagens-page #enviar-mensagem-btn {
+    background: #6a11cb;
+    color: #fff;
+    font-size: 16px;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.mensagens-page #enviar-mensagem-btn:hover {
+    background: #440388;
+}
+
+.mensagens-page .apagar-mesagens {
+    background-color: #ff4d4d; /* Vermelho vibrante */
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 0 auto 20px auto; /* Centraliza o botão horizontalmente e adiciona margem na parte inferior */
+    display: block; /* Faz o botão ocupar a largura definida e ser centralizado */
+    width: 150px; /* Largura fixa de 200px */
+}
+
+.mensagens-page .apagar-mesagens:hover {
+    background-color: #cc0000; /* Vermelho mais escuro ao passar o mouse */
+    transform: scale(1.05); /* Efeito de leve aumento */
+}
+
+.mensagens-page .apagar-mesagens:active {
+    transform: scale(0.95); /* Efeito de clique */
+}
+
+.mensagens-page .badge {
+    background-color: #ff4d4d;
+    color: white;
+    border-radius: 50%;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 8px;
+    display: inline-block;
+}
+
+.mensagens-page .visible {
+    display: block;
+}
+
+.mensagens-page .hidden {
+    display: none;
+}
+
+/* Começo seguidores.html*/
+
+/* Estilos para a página de seguidores */
+.seguidores-page {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza os containers horizontalmente */
+}
+
+.seguidores-page h1 {
+    color: #6a11cb; /* Mesma cor roxa usada na página de mensagens */
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.seguidores-list {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px; /* Largura máxima de 600px */
+}
+
+.seguidores-list h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #6a11cb;
+    text-align: center;
+}
+
+.seguidores-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.seguidores-list li {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.seguidores-list li:hover {
+    background-color: #c3cfe2;
+}
+
+.seguidores-list p {
+    text-align: center;
+    color: #666;
+}
+
+.iniciar-conversa-btn {
+    background-color: #6a11cb; /* Cor roxa */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.iniciar-conversa-btn:hover {
+    background-color: #440388; /* Cor roxa mais escura */
+}
+
+/* ==================== */
+/* ESTILOS GERAIS DA LIVE */
+/* ==================== */
+/* ==================== */
+/* ESTILOS GERAIS DA LIVE */
+/* ==================== */
+.live-page {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container principal */
+.live-page .live-container {
+    width: 95%;
+    max-width: 1400px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 20px;
+    display: grid;
+    grid-template-areas:
+        "title title"
+        "video chat"
+        "controls controls";
+    grid-template-columns: 1fr 350px;
+    grid-template-rows: auto 1fr auto;
+    gap: 20px;
+    height: 90vh; /* Altura fixa para o container principal */
+}
+
+/* Título */
+.live-page h2 {
+    grid-area: title;
+    color: #2575fc;
+    text-align: center;
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+/* Container do vídeo - agora flexível */
+.live-page .video-container {
+    grid-area: video;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100%; /* Ocupa toda a altura disponível */
+    min-height: 0; /* Permite que o vídeo diminua */
+}
+
+.live-page #mainVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Container do chat - mesma altura do vídeo */
+.live-page .chat-container {
+    grid-area: chat;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    height: 100%; /* Mesma altura do vídeo */
+    min-height: 0; /* Permite que o chat diminua */
+}
+
+/* Controles */
+.live-page .controls {
+    grid-area: controls;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+}
+
+.live-page .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.live-page .btn-primary {
+    background: #2575fc;
+    color: white;
+}
+
+.live-page .btn-primary:hover {
+    background: #1a5dc8;
+}
+
+.live-page .btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.live-page .btn-danger:hover {
+    background: #c0392b;
+}
+
+.live-page #status {
+    margin: 10px 0;
+    min-height: 20px;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 16px;
+    color: #2575fc;
+    font-weight: bold;
+}
+
+.live-page #status:empty, 
+.live-page #status.hidden {
+    margin: 0;
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+/* Status da conexão */
+.live-page #connectionStatus {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.live-page #connectionStatus i {
+    font-size: 16px;
+}
+
+.live-page .quality-excellent { background-color: #4CAF50; color: white; }
+.live-page .quality-good { background-color: #8BC34A; color: black; }
+.live-page .quality-poor { background-color: #FFC107; color: black; }
+.live-page .quality-unknown { background-color: #9E9E9E; color: white; }
+.live-page .quality-failed { background-color: #F44336; color: white; }
+
+/* Contador de espectadores */
+.live-stats-container {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 3px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgb(84, 83, 83);
+    font-size: 14px;
+    z-index: 10;
+}
+  
+.viewers-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.viewers-count i {
+    font-size: 14px;
+}
+
+/* Botão de tela cheia */
+.fullscreen-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    color: rgb(84, 83, 83);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.fullscreen-btn:hover {
+    background: rgba(0,0,0,0.8);
+}
+
+/* ==================== */
+/* ESTILOS DO CHAT - ATUALIZADO */
+/* ==================== */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+.chat-message {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgb(242, 228, 244);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-width: 90%;
+    color: #333;
+}
+
+/* Mensagem do criador (azul) */
+.chat-message.creator {
+    background: #e3f2fd;
+    margin-left: auto;
+}
+
+/* Nome do criador (azul) */
+.chat-message.creator .sender {
+    color: #2575fc;
+    font-weight: bold;
+}
+
+/* Nome do usuário normal (roxo) */
+.chat-message:not(.creator) .sender {
+    color: #9c27b0;
+    font-weight: bold;
+}
+
+/* Remover completamente os dois pontos */
+.chat-message .sender::after {
+    content: ":"; /* Mantém o conteúdo original */
+    opacity: 0; /* Torna totalmente transparente */
+    width: 0; /* Remove o espaço ocupado */
+    display: inline-block; /* Permite manipulação de width */
+}
+
+/* Estilo para "Você" (seu próprio usuário) */
+.chat-message .sender-you {
+    color: #9c27b0;
+    font-weight: bold;
+}
+
+.chat-message .sender {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.chat-message .timestamp {
+    font-size: 0.8em;
+    color: #666;
+    float: right;
+    margin-left: 10px;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.chat-input input:focus {
+    border-color: #2575fc;
+    outline: none;
+    box-shadow: 0 0 5px rgba(37, 117, 252, 0.5);
+}
+
+.chat-input button {
+    padding: 8px 12px;
+    background: #2575fc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+  
+.chat-input button:hover {
+    background: #1a5dc8;
+}
+
+/* ==================== */
+/* RESPONSIVIDADE */
+/* ==================== */
+
+@media (max-width: 1023px) {
+    .live-page .live-container {
+        display: grid;
+        grid-template-areas:
+            "title"
+            "video"
+            "chat"
+            "controls";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        gap: 15px;
+        padding: 15px;
+        height: 1100px; /* Altura automática em mobile */
+    }
+
+    .live-page .chat-container {
+        height: 350px;
+    }
+
+    .live-page .video-container {
+        aspect-ratio: 16/9; /* Mantém proporção em mobile */
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .live-page .live-container {
+        display: grid;
+        grid-template-areas:
+            "title"
+            "video"
+            "chat"
+            "controls";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        gap: 15px;
+        padding: 15px;
+        height: auto; /* Altura automática em mobile */
+    }
+
+    .live-page .video-container {
+        aspect-ratio: 16/9; /* Mantém proporção em mobile */
+        height: auto;
+    }
+
+    .live-page .chat-container {
+        height: 250px;
+    }
+
+    .live-page .controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: -15px;
+    }
+
+    .live-page .btn {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+        flex: 1 1 auto;
+        min-width: 90px;
+        max-width: 120px;
+    }
+
+    #watchLiveBtn {
+        padding: 8px 0;
+        font-size: 12px;
+        border-radius: 8px;
+        width: 100%;
+        display: block;
+        margin-top: 10px;
+    }
+    
+    .live-page #connectionStatus {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+    
+    .live-page #connectionStatus i {
+        font-size: 12px;
+    }    
+
+    .fullscreen-btn {
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+        bottom: 5px;
+        right: 10px;
+    }
+
+    .live-stats-container {
+        font-size: 8px;
+        padding: 3px 6px;
+        border-radius: 12px;
+        bottom: 5px;
+        left: 8px;
+    }
+
+    .viewers-count i {
+        font-size: 12px;
+    }
+
+    .chat-message .sender {
+        display: block;
+        margin-bottom: 2px;
+    }
+    
+}
+
+/* Efeitos de animação */
+.counting-update {
+    transform: scale(1.1);
+    color: #ffcc00;
+    transition: all 0.3s ease;
+}
+
+/* Verificar usuarios*/
+
+.verificar-usuarios .pessoas-midia-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 0.82em;
+    line-height: 1.4;
+}
+
+.verificar-usuarios .pessoas-midia-label {
+    color: #333;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.verificar-usuarios .pessoa-midia-tag {
+    background: rgba(0, 0, 0, 0.06);
+    color: #222;
+    padding: 3px 10px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75em;
+}
+
+/* Modo escuro da administração */
+.verificar-usuarios.dark-mode .pessoa-midia-tag {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ddd;
+    border-color: #444;
+}
+
+
+/* Estilos base da página */
+.verificar-usuarios {
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(to right, #141e30, #243b55); /* Azul escuro moderno */
+    overflow-y: auto;
+}
+
+/* Container principal */
+.verificar-usuarios main {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.verificar-usuarios header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.verificar-usuarios header h1 { /* ou qualquer elemento que contenha o texto */
+    display: inline-block;
+    color: #ffffff;
+    background-color: #000;
+    padding: 10px 20px;
+    border-radius: 25px; /* Ajuste este valor para o arredondamento desejado */
+}
+
+.verificar-usuarios h4 {
+   color: #0056b3;
+   padding: 10px;
+}
+
+/* Listas de usuários e vídeos */
+.verificar-usuarios .user-list, 
+.verificar-usuarios .video-list {
+    margin-top: 20px;
+}
+
+/* Cards de usuário */
+.verificar-usuarios .user-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Cards de vídeo - LARGURA FLEXÍVEL */
+.verificar-usuarios .video-card1 {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Largura flexível */
+    max-width: 350px; /* Limite máximo de largura (opcional) */
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+/* Mídias - RESPONSIVO */
+.verificar-usuarios .video-card1 video,
+.verificar-usuarios .video-card1 img {
+    width: 100%; /* Largura flexível */
+    height: 300px; /* Altura proporcional */
+    object-fit: fill; /* Mantém a proporção */
+    display: block; /* Remove espaços extras */
+    margin: 0 auto 10px; /* Centraliza e adiciona margem abaixo */
+}
+
+.video-card1 video:fullscreen {
+    object-fit: contain; /* Mantém a proporção em tela cheia */
+}
+
+/* Informações do usuário */
+.verificar-usuarios .user-info {
+    margin-bottom: 10px;
+}
+
+/* Cabeçalho do usuário */
+.verificar-usuarios .user-header {
+    background-color: #2d1212;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.verificar-usuarios .user-id {
+    color: #0edb1f;
+    font-size: 18px;
+    margin: 0;
+}
+
+/* Estilo atualizado dos badges */
+.verificar-usuarios .badge {
+    display: block; /* Alterado de inline-block para block */
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    color: white;
+    width: fit-content; /* Ajusta a largura ao conteúdo */
+    margin: 10px auto; /* Centraliza horizontalmente */
+    text-align: center; /* Garante que o texto interno também esteja centralizado */
+}
+
+.verificar-usuarios .badge-success {
+    background-color: #28a745;
+}
+
+.verificar-usuarios .badge-warning {
+    background-color: #ffc107;
+}
+
+.verificar-usuarios .badge-danger {
+    background-color: #dc3545;
+}
+
+.verificar-usuarios .badge-excluido {
+    background-color: #6c757d;
+}
+
+/* Área de ações */
+.verificar-usuarios .actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Botões */
+.verificar-usuarios .btn {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: rgb(0, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 5px;
+}
+
+.verificar-usuarios .btn-success {
+    background-color: #28a745;
+}
+
+.verificar-usuarios .btn-danger {
+    background-color: #dc3545;
+}
+
+/* Mensagens de mídia */
+.verificar-usuarios .media-message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Documentos do usuário */
+.verificar-usuarios .user-documents {
+    margin: 15px 0;
+}
+
+.verificar-usuarios .user-documents a {
+    display: inline-block;
+    margin-right: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+/* Estilo para o contêiner de mídia */
+.verificar-usuarios .media-container {
+    display: grid; /* Usa layout em grade */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Define colunas flexíveis */
+    gap: 20px; /* Espaçamento entre os cards */
+    margin-top: 20px; /* Espaçamento superior */
+}
+
+/* Ajuste para telas menores */
+@media (max-width: 768px) {
+    .verificar-usuarios .media-container {
+        grid-template-columns: 1fr; /* Uma coluna para telas pequenas */
+    }
+}
+
+/* Pagina login adm*/
+    
+    .painel-login-adm {
+        font-family: Arial, sans-serif;
+        background-color: #221212; /* Fundo preto */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .painel-login-adm .login-container {
+        background-color: #fff; /* Fundo branco para o painel */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        text-align: center;
+    }
+
+    .painel-login-adm .tight-x {
+        margin-left: -7px;
+        margin-right: -7px;
+    }
+    
+    .painel-login-adm h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #000; /* Texto preto */
+    }
+
+    .painel-login-adm .logo {
+        font-size: 32px; /* Tamanho do logo */
+        margin-bottom: 20px;
+    }
+
+    .painel-login-adm .logo span {
+        color: #ff0000; /* Vermelho para o X */
+    }
+
+    .painel-login-adm label {
+        display: block;
+        margin-bottom: 5px;
+        text-align: left;
+        color: #555; /* Texto cinza para os rótulos */
+    }
+
+    .painel-login-adm input[type="text"],
+    .painel-login-adm input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .painel-login-adm button {
+        width: 100%;
+        padding: 10px;
+        background-color: #ff0000; /* Fundo vermelho para o botão */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .painel-login-adm button:hover {
+        background-color: #cc0000; /* Vermelho mais escuro ao passar o mouse */
+    }
+
+    @media (width <= 400px) {
+        .painel-login-adm .login-container {
+            width: 90%;
+        }
+    }

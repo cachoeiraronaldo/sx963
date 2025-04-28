@@ -1,0 +1,17 @@
+# Ignorar diretórios específicos
+venv/
+node_modules/
+
+# Ignorar arquivos temporários
+*.log
+*.pyc
+__pycache__/
+
+# Ignorar arquivos de ambiente virtual
+*.env
+*.venv
+
+# Ignorar executáveis gerados
+*.exe
+
+.env

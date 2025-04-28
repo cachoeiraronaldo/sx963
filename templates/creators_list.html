@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Escolha um Criador{% endblock %}
+{% block body_class %}creators-list-page{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('index') }}" class="back-btn">Voltar</a>
+
+<div class="container">
+    <h2 style="margin-top: 50px;">Suas Assinaturas</h2>
+    <div class="subscription-list">
+        {% if active_subscriptions %}
+            {% for sub in active_subscriptions %}
+            <div class="subscription-item" onclick="goToDashboard('{{ sub[0] }}')">
+                <!-- Verifica se a URL é completa ou usa fallback -->
+                <img src="{% if sub[3] and sub[3].startswith(('http://', 'https://')) %}{{ sub[3] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (sub[3] if sub[3] else 'default_profile_picture.jpg')) }}{% endif %}" 
+                     class="creator-avatar" alt="{{ sub[0] }}">
+                <span><strong>@{{ sub[0] }}</strong></span>
+                <span>📅 {{ sub[1].strftime('%d/%m/%Y') }} - {{ sub[2].strftime('%d/%m/%Y') }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: gray;">Nenhuma assinatura ativa.</p>
+        {% endif %}
+    </div>
+
+    <h2>Escolha um Criador para Assinar</h2>
+    <div class="creator-list">
+        {% for creator in creators %}
+        <div class="creator-item" onclick="storeReferrerAndRedirect('/creator/{{ creator[0] }}')">
+            <!-- Verifica se a URL é completa ou usa fallback -->
+            <img src="{% if creator[1] and creator[1].startswith(('http://', 'https://')) %}{{ creator[1] }}{% else %}{{ url_for('static', filename='uploads/profile_pictures/' + (creator[1] if creator[1] else 'default_profile_picture.jpg')) }}{% endif %}" 
+                 class="creator-avatar" alt="{{ creator[0] }}">
+            <span>@{{ creator[0] }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/creators_list.js') }}"></script>
+{% endblock %}

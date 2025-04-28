@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil - {{ profile.display_name }}{% endblock %}
+
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block body_attributes %}
+    id="user-profile"
+    data-username="{{ profile.username }}"
+    data-is-owner="{{ 'true' if is_owner else 'false' }}"
+    data-theme-color="{{ profile.theme_color if profile.theme_color else '#ffffff' }}"
+    data-cover-photo="{{ profile.cover_photo_url if profile.cover_photo_url else url_for('static', filename='uploads/cover_photos/default_cover_photo.jpg') }}"
+{% endblock %}
+
+{% block content %}
+<!-- Botão de Voltar -->
+<a href="#" class="back-btn">Voltar</a>
+
+<header id="user-profile-header">
+    <div class="header-overlay">
+        <img src="{{ profile.profile_picture_url if profile.profile_picture_url else url_for('static', filename='uploads/profile_pictures/default_profile_picture.jpg') }}" 
+             alt="Foto de Perfil" class="profile-picture">
+        <span class="username">@{{ profile.username }}</span>
+        <p>{{ profile.description }}</p>
+    </div>
+</header>
+
+<div class="button-container">
+    <button id="like-btn" class="action-button">
+        <i class="fas fa-heart"></i>
+        <span id="like-count">{{ total_likes }}</span>
+    </button>
+
+    {% if is_owner %}
+        <button id="followers-btn" class="action-button">
+            <i class="fas fa-users"></i>
+            <span id="follow-count">{{ total_followers }}</span>
+        </button>
+    {% else %}
+        <button id="follow-btn" class="action-button">
+            <i class="fas fa-users"></i>
+            <span id="follow-count">{{ total_followers }}</span>
+        </button>
+    {% endif %}
+
+    <button id="message-btn" class="action-button">
+        <i class="fas fa-envelope"></i>
+        <span id="unread-messages">{{ unread_messages_count }}</span>
+    </button>
+
+    <button id="live-btn" class="action-button">
+        <i class="fas fa-video"></i>
+        <span id="live-status">{{ 'Ao Vivo' if profile.is_live else 'Offline' }}</span>
+    </button>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    <div id="flash-messages">
+        {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endwith %}
+
+<section class="gallery">
+    <div class="grid-container">
+        {% for media in media %}
+        <div class="grid-item {% if media['aspect'] == 'vertical' %}vertical{% else %}horizontal{% endif %} {% if media['status'] == 'bloqueado' %}video-blocked{% endif %}"
+             data-media-id="{{ media['id'] }}"
+             data-media-type="{{ media['type'] }}"
+             data-media-status="{{ media['status'] }}"
+             data-media-value="{{ media['valor_video'] }}"
+             data-media-url="{{ media['url'] }}"
+             data-media-message="{{ media['mensagem'] }}">
+
+             <!-- Participantes -->
+            <div class="media-participants-container">
+                {% if media['participantes'] and media['participantes']|length > 0 %}
+                    <div class="participants-badge" 
+                        data-participants="{{ media['participantes']|join(',') }}">
+                        <i class="fas fa-users"></i>
+                        <span class="participants-count">{{ media['participantes']|length }}</span>
+                        
+                        <!-- Tooltip para desktop -->
+                        <div class="participants-tooltip">
+                            <strong>Participantes</strong>
+                            <ul>
+                                {% for participante in media['participantes'] %}
+                                    <li>{{ participante }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if media['type'] == 'image' %}
+                {% if media['status'] == 'excluido' %}
+                    <img src="{{ media['url'] }}" alt="Imagem Excluída" style="opacity: 0.5;">
+                    <div class="media-message"><p>{{ media['mensagem'] }}</p></div>
+                {% elif media['status'] == 'bloqueado' %}
+                    <img src="{{ media['url'] }}" alt="Imagem Bloqueada" style="opacity: 0.2;">
+                    <span class="locked-icon"><i class="fas fa-lock"></i></span>
+                    <div class="media-message"><p>{{ media['mensagem'] }}</p></div>
+                {% elif media['status'] == 'pendente' %}
+                    <img src="{{ media['url'] }}" alt="Imagem Pendente" style="opacity: 0.2;">
+                    <div class="media-message"><p>Esta imagem está pendente de aprovação pelo Administrador.</p></div>
+                {% elif media['status'] == 'disponivel' %}
+                    <img src="{{ media['url'] }}" alt="Imagem Disponível" class="expandable-image">
+                {% endif %}
+            {% elif media['type'] == 'video' %}
+                <div class="video-container">
+                    {% if media['status'] == 'bloqueado' %}
+                        <video controls style="display: none;">
+                            <source src="{{ media['url'] }}" type="video/mp4">
+                        </video>
+                        <span class="locked-icon"><i class="fas fa-lock"></i></span>
+                        <div class="media-message"><p>Esta mídia foi bloqueada pelo administrador.</p></div>
+                    {% elif media['status'] == 'pendente' %}
+                        <video controls style="display: none;">
+                            <source src="{{ media['url'] }}" type="video/mp4">
+                        </video>
+                        <div class="media-message"><p>Este vídeo está pendente de aprovação pelo administrador.</p></div>
+                    {% else %}
+                        {% if media['valor_video'] > 0 and not is_owner %}
+                            {% if media['status'] == 'pago' %}
+                                <video controls>
+                                    <source src="{{ media['url'] }}" type="video/mp4">
+                                </video>
+                            {% else %}
+                                <video controls style="display: none;">
+                                    <source src="{{ media['url'] }}" type="video/mp4">
+                                </video>
+                                <span class="locked-icon"><i class="fas fa-lock"></i></span>
+                                <div class="media-message">
+                                    <p>Vídeo exclusivo R$ {{ media['valor_video'] }}.</p>
+                                    <form action="/pagamento" method="POST" style="display: inline;">
+                                        <input type="hidden" name="creator" value="{{ profile.username }}">
+                                        <input type="hidden" name="valor" value="{{ media['valor_video'] }}">
+                                        <input type="hidden" name="media_id" value="{{ media['id'] }}">
+                                        <input type="hidden" name="tipo_pagamento" value="video">
+                                        <button type="submit" class="btn-pay">Pagar para Assistir</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <video controls>
+                                <source src="{{ media['url'] }}" type="video/mp4">
+                            </video>
+                            {% if media['valor_video'] > 0 and is_owner %}
+                                <div class="media-message">
+                                    <p>Vídeo exclusivo R$ {{ media['valor_video'] }}.</p>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if session['username'] == profile.display_name %}
+                <div class="media-actions">
+                    <form action="{{ url_for('delete_media', media_id=media['id']) }}" method="POST">
+                        <button type="submit" class="delete-media-btn">Excluir</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<div id="expanded-image-container" class="expanded-image">
+    <img id="expanded-image" src="" alt="Imagem Expandida">
+</div>
+
+{% if session['username'] == profile.display_name %}
+    <a href="{{ url_for('profile') }}" class="back-btn">Dashbord</a>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/user_profile.js') }}"></script>
+{% endblock %}

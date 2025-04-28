@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Assinar {{ username }}{% endblock %}
+{% block body_class %}subscribe-body{% endblock %}
+
+{% block content %}
+<div class="subscribe-page">
+    <header class="subscribe-header">
+        <h2>Assinar <strong>@{{ username }}</strong></h2>
+        <p>Valor <span class="highlight">R$ {{ valor_assinatura }}/mês</span></p>
+    </header>
+
+    <section class="subscribe-details">
+        <form id="subscribe-form" method="POST" action="{{ url_for('pagamento') }}">
+            <input type="hidden" name="creator" value="{{ username }}">
+            <input type="hidden" name="valor" value="{{ valor_assinatura }}">
+            <button type="submit" class="subscribe-btn">Confirmar Assinatura</button>
+        </form>
+        <a href="{{ request.referrer }}" class="back-link">Cancelar e voltar</a>
+    </section>
+</div>
+{% endblock %}
