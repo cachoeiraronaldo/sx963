@@ -20,7 +20,6 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from flask import send_from_directory
 import socket  
-import imghdr  # Para verificação adicional de imagens
 import os
 from dotenv import load_dotenv
 import filetype
@@ -53,7 +52,6 @@ def resize_image(image_file, output_path, size):
     image.thumbnail(size, Image.ANTIALIAS)  # Redimensiona proporcionalmente
     image.save(output_path)  # Salva a imagem no caminho de destino
     
-
 # Carrega o .env se existir (funciona local/localhost)
 load_dotenv()
 
@@ -183,8 +181,6 @@ def upload_to_s3(file, filename):
         flash("Erro: Credenciais do S3 não encontradas.", 'error')
         return None
 
-
-
 # Tamanhos máximos permitidos (em bytes)
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB para imagens
 MAX_VIDEO_SIZE = 5 * 1024 * 1024 * 1024  # 5GB para vídeos (ajustável conforme necessário)
@@ -192,9 +188,6 @@ MAX_VIDEO_SIZE = 5 * 1024 * 1024 * 1024  # 5GB para vídeos (ajustável conforme
 # Lista de extensões permitidas
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv'}
-
-
-import filetype  # Para detecção de tipo MIME
 
 def is_safe_file(file, allowed_extensions):
     """
