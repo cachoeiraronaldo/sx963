@@ -2202,7 +2202,7 @@ def process_payment_pix():
                 "last_name": "",
                 "identification": {
                     "type": "CPF",
-                    "number": "02698333154"
+                    "number": cpf
                 }
             },
             "external_reference": str(criador_id)

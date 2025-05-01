@@ -36,30 +36,28 @@
 
 <h2 class="titulo-pix">Pix</h2>
 <form id="form-checkout-pix">
-    <div>
-        <input type="hidden" id="pix-user-email" name="email">
-        <input type="hidden" id="pix-user-name" name="username">
-    </div>
-    <div>
-        <input type="hidden" name="transactionAmount" id="pix-transactionAmount" value="{{ valor }}">
-        <input type="hidden" name="description" id="pix-description" value="Assinatura Premium">
-        <br>
-        <button type="submit">Pagar com Pix</button>
-    </div>
-    <div id="pix-payment-result">
-        <h3>Pagamento Pendente</h3>
-        <p>Escaneie o QR Code abaixo ou utilize o código Pix para concluir o pagamento.</p>
-        <img id="pix-qr-code" src="" alt="QR Code">
-        <div>
-            <label for="pix-copy-code">Código Pix:</label>
-            <input type="text" id="pix-copy-code" readonly>
-            <button onclick="copyPixCode()">Copiar Código</button>
-        </div>
-    </div>
+    <input type="hidden" id="pix-creator-username" value="{{ username }}">
+    <input type="hidden" id="pix-tipo-pagamento" value="{{ tipo_pagamento }}">
+    <input type="hidden" id="pix-media-id" value="{{ media_id if media_id else '' }}">
+    <input type="hidden" id="pix-valor" value="{{ valor }}">
+    
+    <button type="submit">Pagar com Pix</button>
 </form>
+
+<div id="pix-payment-result" style="display:none;">
+    <h3>Pagamento Pendente</h3>
+    <p>Escaneie o QR Code abaixo ou utilize o código Pix para concluir o pagamento.</p>
+    <img id="pix-qr-code" src="" alt="QR Code">
+    <div>
+        <label for="pix-copy-code">Código Pix:</label>
+        <input type="text" id="pix-copy-code" readonly>
+        <button type="button" onclick="copyPixCode()">Copiar Código</button>
+    </div>
+</div>
 
 <div id="success-message" class="success-message hidden">✅ Pagamento aprovado! Redirecionando...</div>
 <div id="error-message" class="error-message hidden">❌ Erro ao processar pagamento.</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
