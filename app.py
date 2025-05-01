@@ -33,8 +33,6 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
-
 app.secret_key = 'd675013241f58f2bbe1b8dbbcf632c1f8e2f2a2556690ac4'
 socketio = SocketIO(app)
 
@@ -57,6 +55,12 @@ def resize_image(image_file, output_path, size):
     
 # Carrega o .env se existir (funciona local/localhost)
 load_dotenv()
+
+# Acessa a variável de ambiente
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")  # Note que é "ACCESS_TOKEN" (igual ao .env)
+
+# Configura o SDK do Mercado Pago
+sdk = mercadopago.SDK(ACCESS_TOKEN)
 
 def get_db_connection():
     try:
