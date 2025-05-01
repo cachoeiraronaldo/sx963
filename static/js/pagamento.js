@@ -77,45 +77,46 @@ const cardForm = mp.cardForm({
     }
 });
 
-document.getElementById("form-checkout-pix").addEventListener("submit", async function (e) {
-    e.preventDefault();
+document.getElementById('form-checkout-pix').addEventListener('submit', async function (event) {
+    event.preventDefault();
 
-    const creator_username = document.getElementById("pix-creator-username").value;
-    const tipo_pagamento = document.getElementById("pix-tipo-pagamento").value;
-    const media_id = document.getElementById("pix-media-id").value;
+    const formData = {
+        amount: parseFloat(valorPagamento),
+        email: document.getElementById('pix-user-email').value,
+        description: document.getElementById('pix-description').value,
+        creator_username: creatorUsername,
+        tipo_pagamento: tipoPagamento,
+        media_id: mediaId
+    };
 
     try {
-        const response = await fetch("/process_payment_pix", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                creator_username: creator_username,
-                tipo_pagamento: tipo_pagamento,
-                media_id: media_id
-            })
+        const response = await fetch('/process_payment_pix', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
         });
 
-        const data = await response.json();
+        const result = await response.json();
+        console.log(result);
 
-        if (data.qr_code && data.qr_code_copy) {
-            document.getElementById("pix-payment-result").style.display = "block";
-            document.getElementById("pix-qr-code").src = `data:image/png;base64,${data.qr_code}`;
-            document.getElementById("pix-copy-code").value = data.qr_code_copy;
+        if (result.status === "pending") {
+            document.getElementById('pix-qr-code').src = `data:image/png;base64,${result.qr_code}`;
+            document.getElementById('pix-copy-code').value = result.qr_code_copy;
+            document.getElementById('pix-payment-result').style.display = 'block';
+            alert("Pagamento pendente! Utilize o QR Code ou o código Pix para concluir o pagamento.");
         } else {
-            document.getElementById("error-message").classList.remove("hidden");
+            alert("Erro ao processar pagamento: " + result.error);
         }
     } catch (error) {
-        console.error("Erro ao processar pagamento Pix:", error);
-        document.getElementById("error-message").classList.remove("hidden");
+        console.error("Erro ao processar pagamento:", error);
+        alert("Erro ao processar pagamento. Tente novamente.");
     }
 });
 
 function copyPixCode() {
-    const input = document.getElementById("pix-copy-code");
-    input.select();
-    input.setSelectionRange(0, 99999);
+    const codeInput = document.getElementById('pix-copy-code');
+    codeInput.select();
+    codeInput.setSelectionRange(0, 99999);
     document.execCommand("copy");
     alert("Código Pix copiado!");
 }
