@@ -64,26 +64,15 @@ sdk = mercadopago.SDK(ACCESS_TOKEN)
 
 def get_db_connection():
     try:
-        # Primeiro tenta pegar as variáveis do ambiente local (.env)
-        # Se não tiver, usa as variáveis que o Railway fornece
         db_host = os.getenv('DB_HOST') or os.getenv('MYSQLHOST')
         db_name = os.getenv('DB_NAME') or os.getenv('MYSQLDATABASE')
         db_user = os.getenv('DB_USER') or os.getenv('MYSQLUSER')
         db_password = os.getenv('DB_PASSWORD') or os.getenv('MYSQLPASSWORD')
         db_port = os.getenv('DB_PORT') or os.getenv('MYSQLPORT')
 
-        # Verifica se todas as variáveis estão definidas
         if not all([db_host, db_name, db_user, db_password, db_port]):
             raise ValueError("Uma ou mais variáveis de ambiente estão ausentes.")
 
-        print("Variáveis de ambiente carregadas:")
-        print(f"DB_HOST: {db_host}")
-        print(f"DB_NAME: {db_name}")
-        print(f"DB_USER: {db_user}")
-        print(f"DB_PASSWORD: {'*' * len(db_password)}")  # Esconde a senha
-        print(f"DB_PORT: {db_port}")
-
-        # Faz a conexão
         conn = mysql.connector.connect(
             host=db_host,
             database=db_name,
@@ -91,13 +80,10 @@ def get_db_connection():
             password=db_password,
             port=int(db_port)
         )
-        print("Conexão ao banco de dados bem-sucedida!")
         return conn
 
     except Exception as e:
-        print("Erro ao conectar ao banco de dados:")
-        print(f"Erro: {e}")
-        raise
+        raise RuntimeError(f"Erro ao conectar ao banco de dados: {e}")
 
 def is_vertical(filename):
     """Retorna True se o vídeo ou imagem for vertical."""
@@ -3528,16 +3514,14 @@ def start_live(username):
 def get_token(username):
     try:
         is_owner = request.args.get('is_owner', 'false').lower() == 'true'
-        creator = request.args.get('creator', username)  # Obtém o nome do criador
-        
-        # Usa o nome do criador para a sala
+        creator = request.args.get('creator', username)
         room_name = f"room_{creator}"
         
         grants = {
             "roomJoin": True,
-            "room": room_name,  # Usa o nome da sala do criador
+            "room": room_name,
             "canPublish": is_owner,
-            "canSubscribe": True,  # PERMISSÃO CRUCIAL
+            "canSubscribe": True,
             "canPublishData": is_owner,
             "roomAdmin": is_owner,
             "hidden": False,
@@ -3553,10 +3537,10 @@ def get_token(username):
             "metadata": json.dumps({"username": username})
         }, "e8fd328ab2a95f7b230e3dbb0185a5d9", algorithm="HS256")
         
-        print(f"Token gerado para {username} (sala: {room_name}): {token}")  # LOG ADICIONAL
         return jsonify({
             "token": token,
-            "ws_url": "ws://localhost:8080"
+            # Alterar para o IP público da sua EC2 ou domínio
+            "ws_url": "wss://www.sx69.com.br"  # Note o wss:// para conexão segura
         })
     except Exception as e:
         print(f"ERRO TOKEN: {str(e)}")
@@ -3832,7 +3816,7 @@ def check_livekit_server():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2)
-        s.connect(('localhost', 8080))
+        s.connect(('localhost', 7880))  # Porta padrão do LiveKit
         s.close()
         return jsonify({'status': 'online'})
     except Exception as e:
@@ -3861,7 +3845,10 @@ def test_token():
 
 @app.after_request
 def add_cors(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    allowed_origins = ['https://www.sx69.com.br']
+    origin = request.headers.get('Origin')
+    if origin in allowed_origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 

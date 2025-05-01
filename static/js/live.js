@@ -1,8 +1,14 @@
+// Configuração do Socket.IO - DEVE VIR PRIMEIRO
+const socket = io('https://www.sx69.com.br', {
+  path: '/socket.io',
+  secure: true,
+  transports: ['websocket']
+});
+
 // Configurações globais
 const isOwner = document.body.dataset.isOwner === 'true';
 const username = document.body.dataset.username;
 const creatorUsername = document.body.dataset.creatorUsername;
-const socket = io();
 let room = null;
 let localStream = null;
 
