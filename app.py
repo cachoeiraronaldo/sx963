@@ -25,12 +25,7 @@ from dotenv import load_dotenv
 import filetype
 import boto3
 from botocore.exceptions import NoCredentialsError
-import logging  # ← Pode importar aqui também, se ainda não tiver feito
-
-# Setup de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+ 
 app = Flask(__name__)
 
 app.secret_key = 'd675013241f58f2bbe1b8dbbcf632c1f8e2f2a2556690ac4'
@@ -2146,111 +2141,99 @@ def process_payment_pix():
     if not user_id:
         return jsonify({"error": "Usuário não autenticado"}), 403
 
+    data = request.json
+    creator_username = sanitize_input(data.get("creator_username"))
+    media_id = data.get("media_id")  # ID do vídeo (opcional)
+    tipo_pagamento = sanitize_input(data.get("tipo_pagamento", "assinatura"))  # Padrão: 'assinatura'
+
+    if not creator_username:
+        return jsonify({"error": "Criador de conteúdo não especificado"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
     try:
-        data = request.get_json()
-        creator_username = sanitize_input(data.get("creator_username", "")).strip()
-        media_id = data.get("media_id")  # ID do vídeo (opcional)
-        tipo_pagamento = sanitize_input(data.get("tipo_pagamento", "assinatura"))
-
-        if not creator_username:
-            return jsonify({"error": "Criador de conteúdo não especificado"}), 400
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Buscar dados do usuário autenticado, incluindo CPF
-        cursor.execute("SELECT nome_usuario, email, cpf FROM usuarios WHERE id = %s", (user_id,))
+        # 🛑 Buscar e-mail do usuário logado
+        cursor.execute("SELECT nome_usuario, email FROM usuarios WHERE id = %s", (user_id,))
         user = cursor.fetchone()
+
         if not user:
             return jsonify({"error": "Usuário não encontrado"}), 404
 
-        nome_usuario, email, cpf = user
+        nome_usuario, email = user
 
-        # Sanitize CPF (remove pontuações, só dígitos)
-        cpf = re.sub(r"\D", "", cpf or "")
-        if not cpf or len(cpf) != 11:
-            return jsonify({"error": "CPF inválido ou ausente"}), 400
-
-        # Determina valor a pagar e ID do criador
+        # 🛑 Determina o valor do pagamento
         if media_id:
-            cursor.execute("SELECT valor_video, usuario_id FROM media WHERE id = %s", (media_id,))
-            video_info = cursor.fetchone()
-            if not video_info:
-                return jsonify({"error": "Vídeo não encontrado"}), 404
-            transaction_amount, criador_id = map(float, video_info)
-        else:
+            # Busca o valor do vídeo e o criador_id (usuario_id do criador)
             cursor.execute("""
-                SELECT valor_assinatura, usuario_id 
+                SELECT valor_video, usuario_id 
+                FROM media 
+                WHERE id = %s
+            """, (media_id,))
+            video_info = cursor.fetchone()
+
+            if not video_info:
+                return jsonify({"error": "Vídeo não encontrado ou sem valor definido."}), 404
+
+            valor_video, criador_id = video_info
+            transaction_amount = float(valor_video)
+        else:
+            # Busca o valor da assinatura
+            cursor.execute("""
+                SELECT valor_assinatura 
                 FROM perfis_criadores 
                 WHERE usuario_id = (SELECT id FROM usuarios WHERE nome_usuario = %s)
             """, (creator_username,))
-            result = cursor.fetchone()
-            if not result:
-                return jsonify({"error": "Assinatura não encontrada para este criador."}), 404
-            transaction_amount, criador_id = map(float, result)
+            valor_assinatura = cursor.fetchone()
 
+            if not valor_assinatura:
+                return jsonify({"error": "Valor da assinatura não encontrado para o criador."}), 404
+
+            transaction_amount = float(valor_assinatura[0])
+
+        # Obtém o mês e ano atual no formato "YYYY-MM"
         mes_ano_atual = datetime.now().strftime('%Y-%m')
 
-        # Criar pagamento Pix no MercadoPago
+        # Criar pagamento Pix no Mercado Pago
         payment_data = {
             "transaction_amount": transaction_amount,
-            "description": f"{tipo_pagamento}:{media_id or ''}",
+            "description": "Pagamento Premium",
             "payment_method_id": "pix",
             "payer": {
                 "email": email,
                 "first_name": nome_usuario,
-                "last_name": "",
+                "last_name": "",  # Sem sobrenome
                 "identification": {
-                    "type": "CPF",
-                    "number": cpf
+                    "type": "CPF",  # Assumindo CPF como padrão
+                    "number": "00000000000"  # Placeholder
                 }
-            },
-            "external_reference": str(criador_id)
+            }
         }
 
         payment = sdk.payment().create(payment_data)
-        response = payment.get("response", {})
+        response = payment["response"]
 
         if response.get("status") in ["pending", "approved"]:
-            qr_code_base64 = response["point_of_interaction"]["transaction_data"]["qr_code_base64"]
-            qr_code = response["point_of_interaction"]["transaction_data"]["qr_code"]
-            transaction_id = response.get("id")
+            qr_code = response["point_of_interaction"]["transaction_data"]["qr_code_base64"]
+            qr_code_copy = response["point_of_interaction"]["transaction_data"]["qr_code"]
+            transaction_id = response["id"]  # Obtém o transaction_id do pagamento
 
-            # Registrar pagamento como pendente
-            cursor.execute("""
-                INSERT INTO pagamentos_pix (usuario_id, criador_assinado, media_id, tipo_pagamento, 
-                                            transaction_id, valor_pago, status, mes_ano)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                user_id,
-                creator_username,
-                media_id,
-                tipo_pagamento,
-                transaction_id,
-                transaction_amount,
-                response["status"],
-                mes_ano_atual
-            ))
-            conn.commit()
-
+            # Retorna o QR Code, transaction_id e mes_ano_atual para o frontend
             return jsonify({
                 "status": "pending",
-                "qr_code": qr_code_base64,
-                "qr_code_copy": qr_code,
+                "qr_code": qr_code,  # QR Code em base64
+                "qr_code_copy": qr_code_copy,  # Código Pix (copia e cola)
                 "transaction_id": transaction_id,
-                "mes_ano": mes_ano_atual
+                "mes_ano": mes_ano_atual  # Retorna o mês e ano atual
             })
-
-        logger.warning(f"Falha no pagamento Pix: {response}")
-        return jsonify({"error": "Erro ao criar pagamento Pix"}), 400
-
+        else:
+            return jsonify({"error": response}), 400
     except Exception as e:
-        logger.exception("Erro inesperado no processamento Pix")
-        return jsonify({"error": "Erro interno"}), 500
-
+        print(f"⚠️ Erro ao processar pagamento Pix: {e}")
+        return jsonify({"error": str(e)}), 500
     finally:
-        if 'cursor' in locals(): cursor.close()
-        if 'conn' in locals(): conn.close()
+        cursor.close()
+        conn.close()
 
 @app.route("/get_user_info", methods=["GET"])
 def get_user_info():
