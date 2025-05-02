@@ -1,6 +1,3 @@
-// const mp = new MercadoPago('TEST-e2face31-69ca-428f-bbc9-23f3462bfabf', { locale: 'pt-BR' });
-
-// AMBIENTE DE PRODUÇÃO:
 const mp = new MercadoPago('APP_USR-a538b0f2-b924-4a3c-83a2-29b44657ba5c', { locale: 'pt-BR' });
 
 const creatorUsername = document.getElementById('creator-username').value;
