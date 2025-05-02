@@ -1,4 +1,4 @@
-const mp = new MercadoPago('APP_USR-a538b0f2-b924-4a3c-83a2-29b44657ba5c', { locale: 'pt-BR' });
+const mp = new MercadoPago('APP_USR-b8540af6-80b2-4f56-9b15-7acdd5faed3a', { locale: 'pt-BR' });
 
 const creatorUsername = document.getElementById('creator-username').value;
 const tipoPagamento = document.getElementById('tipo-pagamento').value;
