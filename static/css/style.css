@@ -3509,21 +3509,3 @@ div.dropdown div.categories-dropdown a:hover {
             width: 90%;
         }
     }
-
-    .copy-feedback {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.7);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 4px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        pointer-events: none;
-    }
-    
-    .copy-feedback.show {
-        opacity: 1;
-    }

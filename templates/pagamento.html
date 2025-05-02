@@ -3,92 +3,63 @@
 {% block title %}Pagamento{% endblock %}
 
 {% block body_class %}pagamento-page{% endblock %}
+{% block body_attributes %}id="pagamento"{% endblock %}
 
 {% block content %}
-<div class="payment-container">
-    <a href="{{ url_for('creators_list') }}" class="back-btn">Voltar</a>
+<a href="{{ url_for('creators_list') }}" class="back-btn">Voltar</a>
 
-    <div class="payment-methods">
-        <!-- Método Cartão -->
-        <div class="payment-method active" id="card-payment">
-            <h2><i class="fas fa-credit-card"></i> Pagamento com Cartão</h2>
-            <form id="form-checkout">
-                <input type="hidden" id="creator-username" value="{{ username }}">
-                <input type="hidden" id="tipo-pagamento" value="{{ tipo_pagamento }}">
-                <input type="hidden" id="media-id" value="{{ media_id if media_id else '' }}">
-                <input type="hidden" id="valor-pagamento" value="{{ valor }}">
+<div id="card-payment" class="form-container active">
+    <h2 class="titulo-cartao">Cartão</h2>
+    <form id="form-checkout">
 
-                <div class="form-group">
-                    <label for="form-checkout__cardholderName">Nome no Cartão</label>
-                    <input type="text" id="form-checkout__cardholderName" required>
-                </div>
+        <input type="hidden" id="creator-username" value="{{ username }}">
+        <input type="hidden" id="tipo-pagamento" value="{{ tipo_pagamento }}">
+        <input type="hidden" id="media-id" value="{{ media_id if media_id else '' }}">
+        <input type="hidden" id="valor-pagamento" value="{{ valor }}">
 
-                <div class="form-group">
-                    <label for="form-checkout__cardNumber">Número do Cartão</label>
-                    <input type="text" id="form-checkout__cardNumber" required>
-                </div>
+        <label for="form-checkout__cardholderName"></label>
+        <input type="text" id="form-checkout__cardholderName" placeholder="Nome no Cartão " required>
+        <input type="hidden" id="form-checkout__cardholderEmail">
+        <label for="form-checkout__cardNumber"></label>
+        <input type="text" id="form-checkout__cardNumber" placeholder="Número do Cartão" required>
+        <label for="form-checkout__cardExpirationDate"></label>
+        <input type="text" id="form-checkout__cardExpirationDate" placeholder="Data de Validade" required>
+        <label for="form-checkout__securityCode"></label>
+        <input type="text" id="form-checkout__securityCode" placeholder="CVV" required>
+        <select id="form-checkout__issuer" required class="hidden"></select>
+        <select id="form-checkout__installments" required class="hidden"></select>
+        <button type="submit">Pagar com Cartão</button>
+    </form>
+    <div class="error-message" id="card-error"></div>
+    <div class="success-message" id="card-success"></div>
+</div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="form-checkout__cardExpirationDate">Validade</label>
-                        <input type="text" id="form-checkout__cardExpirationDate" placeholder="MM/AA" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="form-checkout__securityCode">CVV</label>
-                        <input type="text" id="form-checkout__securityCode" required>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="installments-container">
-                    <label for="form-checkout__installments">Parcelas</label>
-                    <select id="form-checkout__installments" required></select>
-                </div>
-
-                <button type="submit" class="payment-button">
-                    <i class="fas fa-lock"></i> Pagar R$ {{ "%.2f"|format(valor) }}
-                </button>
-            </form>
-        </div>
-
-        <!-- Método PIX -->
-        <div class="payment-method" id="pix-payment">
-            <h2><i class="fas fa-qrcode"></i> Pagamento com PIX</h2>
-            <form id="form-checkout-pix">
-                <input type="hidden" id="pix-transactionAmount" value="{{ valor }}">
-                <input type="hidden" id="pix-description" 
-                       value="{% if media_id %}Vídeo {{ media_id }}{% else %}Assinatura {{ username }}{% endif %}">
-
-                <div class="pix-info">
-                    <p>Pagamento instantâneo e seguro</p>
-                    <p>Valor: <strong>R$ {{ "%.2f"|format(valor) }}</strong></p>
-                </div>
-
-                <button type="submit" class="payment-button">
-                    <i class="fas fa-qrcode"></i> Gerar QR Code PIX
-                </button>
-            </form>
-
-            <div id="pix-payment-result" style="display: none;">
-                <h3>Pagamento Pendente</h3>
-                <p>Escaneie o QR Code abaixo ou utilize o código Pix para concluir o pagamento.</p>
-                
-                <div class="qr-code-container">
-                    <img id="pix-qr-code" src="" alt="QR Code">
-                </div>
-                
-                <div class="pix-code-container">
-                    <label for="pix-copy-code">Código Pix:</label>
-                    <div class="copy-container">
-                        <input type="text" id="pix-copy-code" readonly>
-                        <button onclick="copyPixCode()" class="copy-button">
-                            <i class="fas fa-copy"></i> Copiar
-                        </button>
-                    </div>
-                </div>
-            </div>
+<h2 class="titulo-pix">Pix</h2>
+<form id="form-checkout-pix">
+    <div>
+        <input type="hidden" id="pix-user-email" name="email">
+        <input type="hidden" id="pix-user-name" name="username">
+    </div>
+    <div>
+        <input type="hidden" name="transactionAmount" id="pix-transactionAmount" value="{{ valor }}">
+        <input type="hidden" name="description" id="pix-description" value="Assinatura Premium">
+        <br>
+        <button type="submit">Pagar com Pix</button>
+    </div>
+    <div id="pix-payment-result">
+        <h3>Pagamento Pendente</h3>
+        <p>Escaneie o QR Code abaixo ou utilize o código Pix para concluir o pagamento.</p>
+        <img id="pix-qr-code" src="" alt="QR Code">
+        <div>
+            <label for="pix-copy-code">Código Pix:</label>
+            <input type="text" id="pix-copy-code" readonly>
+            <button onclick="copyPixCode()">Copiar Código</button>
         </div>
     </div>
-</div>
+</form>
+
+<div id="success-message" class="success-message hidden">✅ Pagamento aprovado! Redirecionando...</div>
+<div id="error-message" class="error-message hidden">❌ Erro ao processar pagamento.</div>
 {% endblock %}
 
 {% block extra_scripts %}

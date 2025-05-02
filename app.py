@@ -2141,14 +2141,10 @@ def process_payment_pix():
     if not user_id:
         return jsonify({"error": "Usuário não autenticado"}), 403
 
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Dados inválidos"}), 400
-
+    data = request.json
     creator_username = sanitize_input(data.get("creator_username"))
-    media_id = data.get("media_id")
-    tipo_pagamento = sanitize_input(data.get("tipo_pagamento", "assinatura"))
-    external_reference = f"{user_id}_{creator_username}_{datetime.now().timestamp()}"
+    media_id = data.get("media_id")  # ID do vídeo (opcional)
+    tipo_pagamento = sanitize_input(data.get("tipo_pagamento", "assinatura"))  # Padrão: 'assinatura'
 
     if not creator_username:
         return jsonify({"error": "Criador de conteúdo não especificado"}), 400
@@ -2157,55 +2153,59 @@ def process_payment_pix():
     cursor = conn.cursor()
 
     try:
-        # Buscar informações do usuário
-        cursor.execute("SELECT nome_usuario, email, cpf FROM usuarios WHERE id = %s", (user_id,))
+        # 🛑 Buscar e-mail do usuário logado
+        cursor.execute("SELECT nome_usuario, email FROM usuarios WHERE id = %s", (user_id,))
         user = cursor.fetchone()
+
         if not user:
             return jsonify({"error": "Usuário não encontrado"}), 404
 
-        nome_usuario, email, cpf = user
+        nome_usuario, email = user
 
-        # Determinar valor do pagamento
+        # 🛑 Determina o valor do pagamento
         if media_id:
+            # Busca o valor do vídeo e o criador_id (usuario_id do criador)
             cursor.execute("""
                 SELECT valor_video, usuario_id 
                 FROM media 
                 WHERE id = %s
             """, (media_id,))
             video_info = cursor.fetchone()
+
             if not video_info:
                 return jsonify({"error": "Vídeo não encontrado ou sem valor definido."}), 404
+
             valor_video, criador_id = video_info
             transaction_amount = float(valor_video)
-            description = f"Compra do vídeo {media_id}"
         else:
+            # Busca o valor da assinatura
             cursor.execute("""
                 SELECT valor_assinatura 
                 FROM perfis_criadores 
                 WHERE usuario_id = (SELECT id FROM usuarios WHERE nome_usuario = %s)
             """, (creator_username,))
             valor_assinatura = cursor.fetchone()
+
             if not valor_assinatura:
                 return jsonify({"error": "Valor da assinatura não encontrado para o criador."}), 404
-            transaction_amount = float(valor_assinatura[0])
-            description = f"Assinatura de {creator_username}"
 
-        # Configuração do pagamento com todas as melhorias
+            transaction_amount = float(valor_assinatura[0])
+
+        # Obtém o mês e ano atual no formato "YYYY-MM"
+        mes_ano_atual = datetime.now().strftime('%Y-%m')
+
+        # Criar pagamento Pix no Mercado Pago
         payment_data = {
             "transaction_amount": transaction_amount,
-            "description": description,
+            "description": "Pagamento Premium",
             "payment_method_id": "pix",
-            "notification_url": "https://www.sx69.com.br/mercadopago_webhook",
-            "external_reference": external_reference,
-            "statement_descriptor": "SX69*Premium",
-            "binary_mode": True,
             "payer": {
                 "email": email,
-                "first_name": nome_usuario.split()[0],
-                "last_name": " ".join(nome_usuario.split()[1:]) if len(nome_usuario.split()) > 1 else "",
+                "first_name": nome_usuario,
+                "last_name": "",  # Sem sobrenome
                 "identification": {
-                    "type": "CPF",
-                    "number": cpf if cpf else "00000000000"
+                    "type": "CPF",  # Assumindo CPF como padrão
+                    "number": "00000000000"  # Placeholder
                 }
             }
         }
@@ -2214,36 +2214,22 @@ def process_payment_pix():
         response = payment["response"]
 
         if response.get("status") in ["pending", "approved"]:
-            # Registrar transação no banco de dados
-            mes_ano_atual = datetime.now().strftime('%Y-%m')
-            if media_id:
-                cursor.execute("""
-                    INSERT INTO videos_comprados (usuario_id, media_id, transaction_id, mes_ano, criador_id, status)
-                    VALUES (%s, %s, %s, %s, %s, 'pendente')
-                """, (user_id, media_id, response["id"], mes_ano_atual, criador_id))
-            else:
-                cursor.execute("""
-                    INSERT INTO assinaturas (usuario_id, criador_assinado, status, data_inicio, data_fim, 
-                                           transaction_id, valor_pago, tipo_pagamento, mes_ano)
-                    VALUES (%s, %s, 'pendente', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), %s, %s, 'assinatura', %s)
-                """, (user_id, creator_username, response["id"], transaction_amount, mes_ano_atual))
-            
-            conn.commit()
+            qr_code = response["point_of_interaction"]["transaction_data"]["qr_code_base64"]
+            qr_code_copy = response["point_of_interaction"]["transaction_data"]["qr_code"]
+            transaction_id = response["id"]  # Obtém o transaction_id do pagamento
 
-            # Preparar resposta com QR Code
-            pix_data = response["point_of_interaction"]["transaction_data"]
+            # Retorna o QR Code, transaction_id e mes_ano_atual para o frontend
             return jsonify({
                 "status": "pending",
-                "qr_code": pix_data["qr_code_base64"],
-                "qr_code_copy": pix_data["qr_code"],
-                "transaction_id": response["id"],
-                "mes_ano": mes_ano_atual
+                "qr_code": qr_code,  # QR Code em base64
+                "qr_code_copy": qr_code_copy,  # Código Pix (copia e cola)
+                "transaction_id": transaction_id,
+                "mes_ano": mes_ano_atual  # Retorna o mês e ano atual
             })
         else:
-            return jsonify({"error": "Pagamento não foi criado", "response": response}), 400
-
+            return jsonify({"error": response}), 400
     except Exception as e:
-        print(f"Erro ao processar PIX: {str(e)}")
+        print(f"⚠️ Erro ao processar pagamento Pix: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
@@ -2278,223 +2264,266 @@ def get_user_info():
 
 @app.route("/process_payment", methods=["POST"])
 def create_card_payment():
+    """Cria um pagamento via cartão"""
     user_id = session.get("user_id")
     if not user_id:
         return jsonify({"error": "Usuário não autenticado"}), 403
 
-    data = request.get_json()
-    required_fields = ["token", "payment_method_id", "installments", "issuer_id"]
-    if any(field not in data for field in required_fields):
-        return jsonify({"error": "Campos obrigatórios ausentes"}), 400
+    data = request.json
+    print("Dados recebidos:", data)
 
     creator_username = sanitize_input(data.get("creator_username"))
     media_id = data.get("media_id")
     tipo_pagamento = sanitize_input(data.get("tipo_pagamento", "assinatura"))
-    external_reference = f"{user_id}_{creator_username}_{datetime.now().timestamp()}"
+    print("Tipo de Pagamento recebido:", tipo_pagamento)
+
+    if not creator_username:
+        return jsonify({"error": "Criador de conteúdo não especificado"}), 400
 
     conn = get_db_connection()
+
     try:
-        with conn.cursor() as cursor:
-            # Verificar assinatura ativa (se for assinatura)
-            if not media_id:
+        # 🛑 Verifica se o usuário já tem uma assinatura ativa (apenas para assinaturas)
+        if not media_id:
+            with conn.cursor() as cursor:
                 cursor.execute("""
-                    SELECT data_fim FROM assinaturas 
-                    WHERE usuario_id = %s AND criador_assinado = %s 
-                    AND status = 'ativo' AND CURDATE() <= data_fim
+                    SELECT id, status, data_fim 
+                    FROM assinaturas 
+                    WHERE usuario_id = %s 
+                    AND criador_assinado = %s 
+                    AND status = 'ativo'
+                    AND CURDATE() BETWEEN data_inicio AND data_fim
                 """, (user_id, creator_username))
-                if cursor.fetchone():
-                    return jsonify({
-                        "error": f"Você já tem uma assinatura ativa para este criador."
-                    }), 400
 
-            # Buscar informações do usuário
-            cursor.execute("SELECT nome_usuario, email FROM usuarios WHERE id = %s", (user_id,))
+                active_subscription = cursor.fetchone()
+                cursor.fetchall()  # Limpa resultados pendentes
+
+            if active_subscription:
+                data_fim = active_subscription[2]
+                print(f"Erro: Assinatura ativa encontrada até {data_fim}")
+                return jsonify({
+                    "error": f"Você já tem uma assinatura ativa para este criador. A assinatura expira em {data_fim}."
+                }), 400
+
+        # 🛑 Buscar e-mail e CPF do usuário logado
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT nome_usuario, email, cpf FROM usuarios WHERE id = %s", (user_id,))
             user = cursor.fetchone()
-            if not user:
-                return jsonify({"error": "Usuário não encontrado"}), 404
+            cursor.fetchall()
 
-            nome_usuario, email = user
+        if not user:
+            return jsonify({"error": "Usuário não encontrado"}), 404
 
-            # Determinar valor do pagamento
-            if media_id:
+        nome_usuario, email, cpf = user
+
+        # Sanitize CPF (remove pontuações, só dígitos)
+        cpf = re.sub(r"\D", "", cpf or "")
+        if not cpf or len(cpf) != 11:
+            return jsonify({"error": "CPF inválido ou ausente"}), 400
+
+        # 🛑 Determina o valor do pagamento
+        if media_id:
+            with conn.cursor() as cursor:
+                # Busca o valor do vídeo e o criador_id (usuario_id do criador)
                 cursor.execute("""
-                    SELECT valor_video, usuario_id FROM media WHERE id = %s
+                    SELECT valor_video, usuario_id 
+                    FROM media 
+                    WHERE id = %s
                 """, (media_id,))
                 video_info = cursor.fetchone()
-                if not video_info:
-                    return jsonify({"error": "Vídeo não encontrado"}), 404
-                transaction_amount, criador_id = video_info
-                description = f"Compra do vídeo {media_id}"
-            else:
+                cursor.fetchall()
+
+            if not video_info:
+                return jsonify({"error": "Vídeo não encontrado ou sem valor definido."}), 404
+
+            valor_video, criador_id = video_info
+            transaction_amount = float(valor_video)
+        else:
+            with conn.cursor() as cursor:
                 cursor.execute("""
-                    SELECT valor_assinatura FROM perfis_criadores 
+                    SELECT valor_assinatura 
+                    FROM perfis_criadores 
                     WHERE usuario_id = (SELECT id FROM usuarios WHERE nome_usuario = %s)
                 """, (creator_username,))
                 valor_assinatura = cursor.fetchone()
-                if not valor_assinatura:
-                    return jsonify({"error": "Valor da assinatura não encontrado"}), 404
-                transaction_amount = valor_assinatura[0]
-                description = f"Assinatura de {creator_username}"
+                cursor.fetchall()
 
-            # Configurar pagamento com todas as melhorias
-            payment_data = {
-                "transaction_amount": float(transaction_amount),
-                "token": data["token"],
-                "description": description,
-                "payment_method_id": data["payment_method_id"],
-                "installments": int(data["installments"]),
-                "issuer_id": data["issuer_id"],
-                "notification_url": "https://www.sx69.com.br/mercadopago_webhook",
-                "external_reference": external_reference,
-                "statement_descriptor": "SX69*Premium",
-                "binary_mode": True,
-                "payer": {
-                    "email": email,
-                    "identification": {
-                        "type": "CPF",
-                        "number": "00000000000"  # Substituir por CPF real se disponível
-                    }
+            if not valor_assinatura:
+                return jsonify({"error": "Valor da assinatura não encontrado para o criador."}), 404
+            transaction_amount = float(valor_assinatura[0])
+
+        required_fields = ["token", "payment_method_id", "installments", "issuer_id"]
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({"error": f"Campo obrigatório ausente: {field}"}), 400
+
+        payment_data = {
+            "transaction_amount": transaction_amount,
+            "token": data["token"],
+            "description": "Pagamento Premium",
+            "payment_method_id": data["payment_method_id"],
+            "installments": int(data["installments"]),
+            "issuer_id": data["issuer_id"],
+            "payer": {
+                "email": email,
+                "identification": {
+                    "type": "CPF",
+                    "number": cpf  # Inclui o CPF no payload
                 }
             }
+        }
 
-            payment = sdk.payment().create(payment_data)
-            response = payment["response"]
+        print("Enviando pagamento para Mercado Pago:", payment_data)
+        payment = sdk.payment().create(payment_data)
+        response = payment["response"]
 
-            if response.get("status") in ["approved", "pending", "in_process"]:
-                # Registrar transação
-                mes_ano_atual = datetime.now().strftime('%Y-%m')
+        if response.get("status") in ["approved", "pending", "in_process"]:
+            transaction_id = response["id"]
+            mes_ano_atual = datetime.now().strftime('%Y-%m')  # Obtém "YYYY-MM"
+
+            with conn.cursor() as cursor:
                 if media_id:
+                    # 🟢 Pagamento de vídeo (adiciona na tabela `videos_comprados`)
                     cursor.execute("""
-                        INSERT INTO videos_comprados 
-                        (usuario_id, media_id, transaction_id, mes_ano, criador_id, status)
+                        INSERT INTO videos_comprados (usuario_id, media_id, transaction_id, mes_ano, criador_id, status)
                         VALUES (%s, %s, %s, %s, %s, 'pendente')
-                    """, (user_id, media_id, response["id"], mes_ano_atual, criador_id))
-                else:
+                    """, (user_id, media_id, transaction_id, mes_ano_atual, criador_id))
+
+                    # 🔹 Atualiza ou insere no faturamento do criador (`acertos_mensais`)
                     cursor.execute("""
-                        INSERT INTO assinaturas 
-                        (usuario_id, criador_assinado, status, data_inicio, data_fim, 
-                         transaction_id, valor_pago, tipo_pagamento, mes_ano)
-                        VALUES (%s, %s, 'pendente', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 
-                               %s, %s, 'assinatura', %s)
-                    """, (user_id, creator_username, response["id"], 
-                          transaction_amount, mes_ano_atual))
-                
-                conn.commit()
-                return jsonify({
-                    "status": response["status"],
-                    "transaction_id": response["id"],
-                    "redirect_url": f"/dashboard/{creator_username.replace('@', '')}"
-                })
-            else:
-                return jsonify({
-                    "error": "Pagamento não aprovado",
-                    "status": response.get("status"),
-                    "status_detail": response.get("status_detail")
-                }), 400
+                        INSERT INTO acertos_mensais (usuario_id, criador_assinado, total_videos, mes_ano, status)
+                        VALUES (%s, %s, %s, %s, 'pendente')
+                        ON DUPLICATE KEY UPDATE total_videos = total_videos + %s
+                    """, (criador_id, creator_username, transaction_amount, mes_ano_atual, transaction_amount))
+
+                else:
+                    # 🟢 Pagamento de assinatura (adiciona na tabela `assinaturas`)
+                    cursor.execute("""
+                        INSERT INTO assinaturas (usuario_id, criador_assinado, status, data_inicio, data_fim, transaction_id, valor_pago, tipo_pagamento, mes_ano)
+                        VALUES (%s, %s, 'pendente', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), %s, %s, 'assinatura', %s)
+                        ON DUPLICATE KEY UPDATE status='pendente', data_inicio=NOW(), data_fim=DATE_ADD(NOW(), INTERVAL 30 DAY), transaction_id=%s, valor_pago=%s, tipo_pagamento='assinatura', mes_ano=%s
+                    """, (user_id, creator_username, transaction_id, transaction_amount, mes_ano_atual, transaction_id, transaction_amount, mes_ano_atual))
+
+            conn.commit()
+
+            redirect_url = f"/dashboard/{creator_username}"
+            return jsonify({
+                "status": response["status"],
+                "status_detail": response.get("status_detail"),
+                "transaction_id": transaction_id,
+                "redirect_url": redirect_url
+            })
+        else:
+            print("⚠️ Pagamento não aprovado. Status:", response.get("status"))
+            return jsonify({"error": "Pagamento não aprovado", "status": response.get("status"), "status_detail": response.get("status_detail")}), 400
 
     except Exception as e:
-        print(f"Erro no pagamento: {str(e)}")
+        print(f"❌ Erro ao processar pagamento: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
-        conn.close()
+        conn.close()  # Fecha a conexão
 
 @app.route("/mercadopago_webhook", methods=["POST"])
 def mercadopago_webhook():
     try:
         data = request.get_json()
-        if not data or "data" not in data or "id" not in data["data"]:
-            return jsonify({"error": "Formato de notificação inválido"}), 400
+        payment_id = data.get("data", {}).get("id")
 
-        payment_id = data["data"]["id"]
+        if not payment_id:
+            return jsonify({"error": "payment_id não encontrado"}), 400
+
+        # Busca os detalhes do pagamento na API do MercadoPago
         payment_info = sdk.payment().get(payment_id)
         response = payment_info.get("response", {})
 
-        if not response:
-            return jsonify({"error": "Pagamento não encontrado"}), 404
-
         status = response.get("status")
         if status != "approved":
-            return jsonify({"error": f"Status não aprovado: {status}"}), 200
+            return jsonify({"error": f"Pagamento não aprovado. Status: {status}"}), 400
 
         conn = get_db_connection()
+        cursor = conn.cursor()
+
         try:
-            with conn.cursor() as cursor:
-                # Verificar se já foi processado
-                cursor.execute("""
-                    SELECT 1 FROM assinaturas 
-                    WHERE transaction_id = %s AND status = 'ativo'
-                    UNION
-                    SELECT 1 FROM videos_comprados 
-                    WHERE transaction_id = %s AND status = 'aprovado'
-                """, (payment_id, payment_id))
-                if cursor.fetchone():
-                    return jsonify({"status": "already_processed"}), 200
+            # Verifica se o pagamento é de cartão ou Pix
+            payment_method = response.get("payment_method_id")
+            is_pix = payment_method == "pix"
 
-                # Obter dados da transação
-                external_ref = response.get("external_reference", "")
-                is_pix = response.get("payment_method_id") == "pix"
-                amount = float(response.get("transaction_amount", 0))
-
-                if is_pix:
-                    # Lógica para PIX
-                    if "video" in response.get("description", "").lower():
-                        cursor.execute("""
-                            UPDATE videos_comprados 
-                            SET status = 'aprovado' 
-                            WHERE transaction_id = %s
-                        """, (payment_id,))
-                    else:
-                        cursor.execute("""
-                            UPDATE assinaturas 
-                            SET status = 'ativo' 
-                            WHERE transaction_id = %s
-                        """, (payment_id,))
+            if is_pix:
+                # Pagamento via Pix: busca os dados da transação no payload do webhook
+                description = response.get("description", "")
+                if "video" in description.lower():
+                    tipo_pagamento = "video"
                 else:
-                    # Lógica para cartão
+                    tipo_pagamento = "assinatura"
+
+                usuario_id = response.get("payer", {}).get("id")
+                criador_assinado = response.get("external_reference", "")
+                valor_pago = float(response.get("transaction_amount", 0))
+                media_id = None  # O media_id pode ser obtido do description ou external_reference, se necessário
+            else:
+                # Pagamento via cartão: busca os dados da transação na tabela `assinaturas`
+                cursor.execute("""
+                    SELECT usuario_id, tipo_pagamento, media_id, criador_assinado, valor_pago
+                    FROM assinaturas 
+                    WHERE transaction_id = %s
+                """, (payment_id,))
+                result = cursor.fetchone()
+
+                if not result:
+                    print(f"⚠️ Nenhum registro encontrado para o transaction_id: {payment_id}")
+                    return jsonify({"error": "Nenhum registro encontrado para o pagamento"}), 404
+
+                usuario_id, tipo_pagamento, media_id, criador_assinado, valor_pago = result
+
+            if status == "approved":
+                if tipo_pagamento == "assinatura":
+                    # 🟢 Ativa a assinatura
                     cursor.execute("""
-                        SELECT tipo_pagamento FROM assinaturas 
+                        UPDATE assinaturas
+                        SET status = 'ativo'
                         WHERE transaction_id = %s
                     """, (payment_id,))
-                    result = cursor.fetchone()
-                    if result and result[0] == "assinatura":
-                        cursor.execute("""
-                            UPDATE assinaturas 
-                            SET status = 'ativo' 
-                            WHERE transaction_id = %s
-                        """, (payment_id,))
-                    else:
-                        cursor.execute("""
-                            UPDATE videos_comprados 
-                            SET status = 'aprovado' 
-                            WHERE transaction_id = %s
-                        """, (payment_id,))
 
-                # Atualizar acertos mensais
-                creator = response.get("description", "").split()[-1] if is_pix else None
-                if creator:
+                    # 🔹 Registra o faturamento da assinatura na tabela `acertos_mensais`
                     cursor.execute("""
-                        INSERT INTO acertos_mensais 
-                        (usuario_id, criador_assinado, total_assinaturas, mes_ano)
-                        VALUES (
-                            (SELECT usuario_id FROM perfis_criadores WHERE display_name = %s),
-                            %s, %s, DATE_FORMAT(NOW(), '%Y-%m')
-                        )
+                        INSERT INTO acertos_mensais (usuario_id, criador_assinado, total_assinaturas, mes_ano)
+                        VALUES (%s, %s, %s, DATE_FORMAT(NOW(), '%Y-%m'))
                         ON DUPLICATE KEY UPDATE total_assinaturas = total_assinaturas + %s
-                    """, (creator, creator, amount, amount))
+                    """, (usuario_id, criador_assinado, valor_pago, valor_pago))
 
-                conn.commit()
-                return jsonify({"status": "processed"}), 200
+                    conn.commit()
+                    print(f"🎉 Assinatura ativada para o criador {criador_assinado} pelo usuário {usuario_id}!")
+
+                elif tipo_pagamento == "video":
+                    # 🟢 Registra a compra do vídeo na tabela `videos_comprados`
+                    cursor.execute("""
+                        INSERT INTO videos_comprados (usuario_id, media_id, transaction_id)
+                        VALUES (%s, %s, %s)
+                    """, (usuario_id, media_id, payment_id))
+
+                    # 🔹 Registra o faturamento do vídeo na tabela `acertos_mensais`
+                    cursor.execute("""
+                        INSERT INTO acertos_mensais (usuario_id, criador_assinado, total_videos, mes_ano)
+                        VALUES (%s, %s, %s, DATE_FORMAT(NOW(), '%Y-%m'))
+                        ON DUPLICATE KEY UPDATE total_videos = total_videos + %s
+                    """, (usuario_id, criador_assinado, valor_pago, valor_pago))
+
+                    conn.commit()
+                    print(f"🎉 Vídeo ID {media_id} comprado pelo usuário {usuario_id}!")
 
         except Exception as e:
             conn.rollback()
-            print(f"Erro no webhook: {str(e)}")
-            return jsonify({"error": str(e)}), 500
+            print(f"⚠️ Erro ao atualizar o banco de dados: {e}")
+            return jsonify({"error": "Erro ao atualizar o banco de dados"}), 500
         finally:
+            cursor.close()
             conn.close()
 
+        return jsonify({"status": "processed"}), 200
+
     except Exception as e:
-        print(f"Erro geral no webhook: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"⚠️ Erro ao processar webhook: {e}")
+        return jsonify({"error": "Erro interno no servidor"}), 500
 
 @app.route('/pagamento', methods=['GET', 'POST'])
 def pagamento():
