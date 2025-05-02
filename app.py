@@ -2281,7 +2281,7 @@ def create_card_payment():
         return jsonify({"error": "Criador de conteúdo não especificado"}), 400
 
     conn = get_db_connection()
-
+    
     try:
         # 🛑 Verifica se o usuário já tem uma assinatura ativa (apenas para assinaturas)
         if not media_id:
@@ -2296,7 +2296,7 @@ def create_card_payment():
                 """, (user_id, creator_username))
 
                 active_subscription = cursor.fetchone()
-                cursor.fetchall()  # Limpa resultados pendentes
+                cursor.fetchall()  # 🔥 Limpa qualquer resultado pendente
 
             if active_subscription:
                 data_fim = active_subscription[2]
@@ -2305,21 +2305,16 @@ def create_card_payment():
                     "error": f"Você já tem uma assinatura ativa para este criador. A assinatura expira em {data_fim}."
                 }), 400
 
-        # 🛑 Buscar e-mail e CPF do usuário logado
+        # 🛑 Buscar e-mail do usuário logado
         with conn.cursor() as cursor:
-            cursor.execute("SELECT nome_usuario, email, cpf FROM usuarios WHERE id = %s", (user_id,))
+            cursor.execute("SELECT nome_usuario, email FROM usuarios WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             cursor.fetchall()
 
         if not user:
             return jsonify({"error": "Usuário não encontrado"}), 404
 
-        nome_usuario, email, cpf = user
-
-        # Sanitize CPF (remove pontuações, só dígitos)
-        cpf = re.sub(r"\D", "", cpf or "")
-        if not cpf or len(cpf) != 11:
-            return jsonify({"error": "CPF inválido ou ausente"}), 400
+        nome_usuario, email = user
 
         # 🛑 Determina o valor do pagamento
         if media_id:
@@ -2332,10 +2327,10 @@ def create_card_payment():
                 """, (media_id,))
                 video_info = cursor.fetchone()
                 cursor.fetchall()
-
+            
             if not video_info:
                 return jsonify({"error": "Vídeo não encontrado ou sem valor definido."}), 404
-
+            
             valor_video, criador_id = video_info
             transaction_amount = float(valor_video)
         else:
@@ -2347,7 +2342,7 @@ def create_card_payment():
                 """, (creator_username,))
                 valor_assinatura = cursor.fetchone()
                 cursor.fetchall()
-
+            
             if not valor_assinatura:
                 return jsonify({"error": "Valor da assinatura não encontrado para o criador."}), 404
             transaction_amount = float(valor_assinatura[0])
@@ -2364,13 +2359,7 @@ def create_card_payment():
             "payment_method_id": data["payment_method_id"],
             "installments": int(data["installments"]),
             "issuer_id": data["issuer_id"],
-            "payer": {
-                "email": email,
-                "identification": {
-                    "type": "CPF",
-                    "number": cpf  # Inclui o CPF no payload
-                }
-            }
+            "payer": {"email": email}
         }
 
         print("Enviando pagamento para Mercado Pago:", payment_data)
@@ -2403,6 +2392,7 @@ def create_card_payment():
                         VALUES (%s, %s, 'pendente', NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), %s, %s, 'assinatura', %s)
                         ON DUPLICATE KEY UPDATE status='pendente', data_inicio=NOW(), data_fim=DATE_ADD(NOW(), INTERVAL 30 DAY), transaction_id=%s, valor_pago=%s, tipo_pagamento='assinatura', mes_ano=%s
                     """, (user_id, creator_username, transaction_id, transaction_amount, mes_ano_atual, transaction_id, transaction_amount, mes_ano_atual))
+
 
             conn.commit()
 
